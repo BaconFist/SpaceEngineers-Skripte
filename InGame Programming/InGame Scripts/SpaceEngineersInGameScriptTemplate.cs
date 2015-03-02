@@ -13,7 +13,7 @@ using VRage;
 
 namespace BaconfistSEInGameScript
 {
-    class DummyClass
+    class SpaceEngineersInGameScriptTemplate
     {
         IMyGridTerminalSystem GridTerminalSystem;
         String Storage;
