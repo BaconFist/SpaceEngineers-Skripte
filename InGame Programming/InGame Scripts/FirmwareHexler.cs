@@ -12,7 +12,7 @@ using VRage;
 
 namespace BaconfistSEInGameScript
 {
-    class CargoPercent
+    class FirmwareHexler
     {
         IMyGridTerminalSystem GridTerminalSystem;
         String Storage;
