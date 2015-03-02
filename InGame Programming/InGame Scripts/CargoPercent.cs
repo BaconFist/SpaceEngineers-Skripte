@@ -68,7 +68,7 @@ namespace BaconfistSEInGameScript
                     percent = Convert.ToInt32(Math.Round(100 * (cur / max), 0));
                 }
 
-                textpanel.WritePublicText(percent.ToString() + "%\An:" + activeToolCount.ToString());
+                textpanel.WritePublicText(percent.ToString() + "%\nAn:" + activeToolCount.ToString());
                 textpanel.ShowTextureOnScreen();
                 textpanel.ShowPublicTextOnScreen();
             }            
