@@ -16,6 +16,7 @@ namespace BaconfistSEInGameScript
     class DummyClass
     {
         IMyGridTerminalSystem GridTerminalSystem;
+        String Storage;
 // Begin InGame-Script
         void Main()
         {
