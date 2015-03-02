@@ -17,6 +17,33 @@ namespace BaconfistSEInGameScript
     {
         IMyGridTerminalSystem GridTerminalSystem;
 // Begin InGame-Script 
+        void CargoCapacityV2() {
+            IMyCargoContainer cargo = (GridTerminalSystem.GetBlockWithName("Frachtcontainer") as IMyCargoContainer);
+            IMyTextPanel textPanel = (GridTerminalSystem.GetBlockWithName("Textpanel Frachtinfo") as IMyTextPanel);
+            if ((cargo is IMyCargoContainer) && (textPanel is IMyTextPanel))
+            {
+                IMyInventory Inventory =  cargo.GetInventory(0);
+                StringBuilder text = new StringBuilder();
+                text.AppendLine("::: Lager '" + cargo.CustomName + "':::");
+                text.AppendLine("");
+                text.AppendLine("Belegt zu " + (100 / (Convert.ToDouble(Inventory.MaxVolume.ToString()) / Convert.ToDouble(Inventory.CurrentVolume.ToString()))).ToString() + "%");
+                text.AppendLine("Aktuelles Volumen");
+                text.AppendLine("  " + (Convert.ToDouble(Inventory.CurrentVolume.ToString())).ToString() + " L");
+                text.AppendLine("Freies Volumen");
+                text.AppendLine("  " + (Convert.ToDouble(Inventory.MaxVolume.ToString()) - Convert.ToDouble(Inventory.CurrentVolume.ToString())).ToString() + " L");
+                text.AppendLine("Maximales Volumen");
+                text.AppendLine("  " + (Convert.ToDouble(Inventory.MaxVolume.ToString())).ToString() + " L");
+                
+                textPanel.WritePublicText(text.ToString());
+                textPanel.ShowTextureOnScreen();
+                textPanel.ShowPublicTextOnScreen();
+            }
+
+
+        }
+
+
+
         List<String> cargoBlockGroupNames = new List<string>();
         int opt_digits = 1;
 

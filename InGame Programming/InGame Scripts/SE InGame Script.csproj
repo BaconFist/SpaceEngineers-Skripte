@@ -35,6 +35,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="CargoLevelDisplay.cs" />
+    <Compile Include="CargoPercent.cs" />
+    <Compile Include="DropStones-1.cs" />
     <Compile Include="DummyClass.cs" />
     <Compile Include="ProductionBlockOff.cs" />
     <Compile Include="AssemblerCleanUp.cs" />
@@ -45,6 +47,7 @@
     <Compile Include="ProductionBlockOn.cs" />
     <Compile Include="RedAlert_v01.cs" />
     <Compile Include="RefreshTextPanels.cs" />
+    <Compile Include="renamer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Sandbox.Common">
