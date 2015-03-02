@@ -37,6 +37,7 @@
     <Compile Include="CargoLevelDisplay.cs" />
     <Compile Include="CargoPercent.cs" />
     <Compile Include="DropStones-1.cs" />
+    <Compile Include="PowerStatusDisplay.cs" />
     <Compile Include="SpaceEngineersInGameScriptTemplate.cs" />
     <Compile Include="ProductionBlockOff.cs" />
     <Compile Include="AssemblerCleanUp.cs" />
