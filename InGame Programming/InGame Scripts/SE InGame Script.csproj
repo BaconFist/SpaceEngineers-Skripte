@@ -35,13 +35,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="CargoLevelDisplay.cs" />
+    <Compile Include="DetailedCargoDisplay.cs" />
     <Compile Include="FirmwareHexler.cs" />
     <Compile Include="DropStones-1.cs" />
-<<<<<<< HEAD
     <Compile Include="PowerStatusDisplay.cs" />
-=======
     <Compile Include="FirmwarePaWBauwagen.cs" />
->>>>>>> origin/master
     <Compile Include="SpaceEngineersInGameScriptTemplate.cs" />
     <Compile Include="ProductionBlockOff.cs" />
     <Compile Include="AssemblerCleanUp.cs" />
