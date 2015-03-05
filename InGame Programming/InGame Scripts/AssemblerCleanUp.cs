@@ -24,20 +24,34 @@ namespace BaconfistSEInGameScript
         //InGame Script BEGIN        
         void Main()
         {
-            IMyCargoContainer cargo = (GridTerminalSystem.GetBlockWithName("Barrencontainer") as IMyCargoContainer);
-            if(cargo != null){
-                IMyInventory cargoInventory = cargo.GetInventory(0);
-                IMyInventory assemblerInventory = null;
-                List<IMyInventoryItem> items = null;
+            (new AssemblerCleaning()).run(GridTerminalSystem, "target_cargo"); 
+        }
 
-                List<IMyTerminalBlock> assembler = new List<IMyTerminalBlock>();
-                GridTerminalSystem.GetBlocksOfType<IMyTerminalBlock>(assembler, delegate(IMyTerminalBlock block) { return (block is IMyAssembler);});
-                if (assembler.Count == 0)
+        class AssemblerCleaning
+        {
+            public void run(IMyGridTerminalSystem GridTerminalSystem, String cargoName)
+            {
+                IMyCargoContainer cargo = (GridTerminalSystem.GetBlockWithName(cargoName) as IMyCargoContainer);
+                if (cargo is IMyCargoContainer)
                 {
-                    throw new Exception("Kein Fertigungsroboter gefunden.");
+                    IMyAssembler assembler;
+                    for (int i = 0; i < GridTerminalSystem.Blocks.Count; i++)
+                    {
+                        assembler = (GridTerminalSystem.Blocks[i] as IMyAssembler);
+
+                    }
                 }
 
-                for(int i=0;i<assembler.Count;i++){
+
+                if (cargo != null)
+                {
+                    IMyInventory cargoInventory = cargo.GetInventory(0);
+                    IMyInventory assemblerInventory = null;
+                    List<IMyInventoryItem> items = null;
+                    List<IMyTerminalBlock> assembler = new List<IMyTerminalBlock>();
+                    GridTerminalSystem.GetBlocksOfType<IMyTerminalBlock>(assembler, delegate(IMyTerminalBlock block) { return (block is IMyAssembler); });
+                    for (int i = 0; i < assembler.Count; i++)
+                    {
                         assemblerInventory = assembler[i].GetInventory(0);
                         if (assemblerInventory.IsConnectedTo(cargoInventory))
                         {
@@ -47,13 +61,9 @@ namespace BaconfistSEInGameScript
                                 cargoInventory.TransferItemFrom(assemblerInventory, ii, null, true);
                             }
                         }
+                    }
                 }
             }
-            else
-            {
-                throw new Exception("Barrencontainer nicht gefunden.");
-            }
-
         }
         //InGame Script END
     }
