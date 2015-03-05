@@ -21,16 +21,17 @@ namespace BaconfistSEInGameScript
         //PaW.Bauwagen Firmware 
 
         // Options
-        const String main_cargo = "Frachtcontainer Bauwagen";
-        const String main_textPanelName = "LCD Panel Firmware Ausgabe";
-        const Int32 main_textPanelLineMax = 35;
-        const Int32 main_textPanelColMax = 70;
+        const String kernel_textPanelName = "LCD Panel Firmware Ausgabe";
+        const Int32 kernel_textPanelLineMax = 35;
+        const Int32 kernel_textPanelColMax = 70;
         const String ReactorInfo_textPanel = "Text Panel Reaktor Info";
         const String ReactorInfo_reactor = "Reaktor (klein)";
         const String Clock_textPanel = "Textpanel Uhr";
+        const String AssemblerCleaning_target_cargo = "Frachtcontainer Bauwagen";
+
         // Run-Settings
-        const Int16 _stepMax = 100;
-        Int16 _step = 1;
+        const Int16 kernel_max_steps = 30;
+        Int16 kernel_current_step = 1;
         IMyTextPanel _textPanel;
         List<String> _textPanelLines = new List<string>();
         long StartTime; 
@@ -39,75 +40,84 @@ namespace BaconfistSEInGameScript
         {
             boot();
             //Programms BEGIN
-            ReactorInfo();
-            Clock();
+            (new ReactorInfo()).run(GridTerminalSystem, ReactorInfo_textPanel, ReactorInfo_reactor);
+            (new Clock()).run(GridTerminalSystem, Clock_textPanel);
             if (isMatchingStep(30))
             {
-                AssemblerCleaning();
+                (new AssemblerCleaning()).run(GridTerminalSystem, AssemblerCleaning_target_cargo);
                 debug("[" + DateTime.Now.ToString() + "] Fertigungsroboter bereinigt.");    
             }
             //Programms END
             end();
         }
 
-        void Clock()
+        class Clock
         {
-            IMyTextPanel uhr = (GridTerminalSystem.GetBlockWithName(Clock_textPanel) as IMyTextPanel);
-            if (uhr is IMyTextPanel)
+            public void run(IMyGridTerminalSystem GridTerminalSystem, String textPanel)
             {
-                uhr.WritePublicText(DateTime.Now.ToString().Replace(" ", "\n"));
+                IMyTextPanel uhr = (GridTerminalSystem.GetBlockWithName(textPanel) as IMyTextPanel);
+                if (uhr is IMyTextPanel)
+                {
+                    uhr.WritePublicText(DateTime.Now.ToString().Replace(" ", "\n"));
+                }
             }
         }
 
-        void AssemblerCleaning()
+        class AssemblerCleaning
         {
-            IMyCargoContainer cargo = (GridTerminalSystem.GetBlockWithName(main_cargo) as IMyCargoContainer);
-            if (cargo is IMyCargoContainer)
+            public void run(IMyGridTerminalSystem GridTerminalSystem, String cargoName)
             {
-                IMyAssembler assembler;
-                for (int i = 0; i < GridTerminalSystem.Blocks.Count; i++)
+                IMyCargoContainer cargo = (GridTerminalSystem.GetBlockWithName(cargoName) as IMyCargoContainer);
+                if (cargo is IMyCargoContainer)
                 {
-                    assembler = (GridTerminalSystem.Blocks[i] as IMyAssembler);
-
-                }
-            }
-
-
-            if (cargo != null)
-            {
-                IMyInventory cargoInventory = cargo.GetInventory(0);
-                IMyInventory assemblerInventory = null;
-                List<IMyInventoryItem> items = null;
-                List<IMyTerminalBlock> assembler = new List<IMyTerminalBlock>();
-                GridTerminalSystem.GetBlocksOfType<IMyTerminalBlock>(assembler, delegate(IMyTerminalBlock block) { return (block is IMyAssembler); });
-                for (int i = 0; i < assembler.Count; i++)
-                {
-                    assemblerInventory = assembler[i].GetInventory(0);
-                    if (assemblerInventory.IsConnectedTo(cargoInventory))
+                    IMyAssembler assembler;
+                    for (int i = 0; i < GridTerminalSystem.Blocks.Count; i++)
                     {
-                        items = assemblerInventory.GetItems();
-                        for (int ii = 0; ii < items.Count; ii++)
+                        assembler = (GridTerminalSystem.Blocks[i] as IMyAssembler);
+
+                    }
+                }
+
+
+                if (cargo != null)
+                {
+                    IMyInventory cargoInventory = cargo.GetInventory(0);
+                    IMyInventory assemblerInventory = null;
+                    List<IMyInventoryItem> items = null;
+                    List<IMyTerminalBlock> assembler = new List<IMyTerminalBlock>();
+                    GridTerminalSystem.GetBlocksOfType<IMyTerminalBlock>(assembler, delegate(IMyTerminalBlock block) { return (block is IMyAssembler); });
+                    for (int i = 0; i < assembler.Count; i++)
+                    {
+                        assemblerInventory = assembler[i].GetInventory(0);
+                        if (assemblerInventory.IsConnectedTo(cargoInventory))
                         {
-                            cargoInventory.TransferItemFrom(assemblerInventory, ii, null, true);
+                            items = assemblerInventory.GetItems();
+                            for (int ii = 0; ii < items.Count; ii++)
+                            {
+                                cargoInventory.TransferItemFrom(assemblerInventory, ii, null, true);
+                            }
                         }
                     }
                 }
             }
         }
 
-        void ReactorInfo()
+        class ReactorInfo
         {
-            IMyTextPanel textPanel = (GridTerminalSystem.GetBlockWithName(ReactorInfo_textPanel) as IMyTextPanel);
-            IMyReactor reactor = (GridTerminalSystem.GetBlockWithName(ReactorInfo_reactor) as IMyReactor);
-            if ((textPanel is IMyTextPanel) && (reactor is IMyReactor))
+            public void run(IMyGridTerminalSystem GridTerminalSystem, String textPanelName, String reactorName)
             {
-                textPanel.WritePublicText(reactor.DetailedInfo + "\n\n letzte Aktualisierung:\n" + DateTime.Now.ToString());
+                IMyTextPanel textPanel = (GridTerminalSystem.GetBlockWithName(textPanelName) as IMyTextPanel);
+                IMyReactor reactor = (GridTerminalSystem.GetBlockWithName(reactorName) as IMyReactor);
+                if ((textPanel is IMyTextPanel) && (reactor is IMyReactor))
+                {
+                    textPanel.WritePublicText(reactor.DetailedInfo + "\n\n letzte Aktualisierung:\n" + DateTime.Now.ToString());
+                }
             }
         }
 
         //Kernel begin
         void debug(String line){
-            _textPanelLines.AddList(SplitIntoChunks(line, main_textPanelColMax));
+            _textPanelLines.AddList(SplitIntoChunks(line, kernel_textPanelColMax));
         }
 
         private List<string> SplitIntoChunks(string text, int chunkSize)
@@ -127,7 +137,7 @@ namespace BaconfistSEInGameScript
         {
             if (_textPanel is IMyTextPanel)
             {
-                Int16 lineMax = main_textPanelLineMax - 1;
+                Int16 lineMax = kernel_textPanelLineMax - 1;
                 if (_textPanelLines.Count > lineMax)
                 {
                     _textPanelLines = _textPanelLines.GetRange(_textPanelLines.Count - lineMax, lineMax);
@@ -139,7 +149,7 @@ namespace BaconfistSEInGameScript
                 }
                 DateTime now = DateTime.Now;
                 long runtime = (now.Ticks / TimeSpan.TicksPerMillisecond) - StartTime;
-                _textPanel.WritePublicText("Bauwagen Firmware - " + now.ToString() + " - Laufzeit: " + runtime.ToString() + "ms - Step: " + _step.ToString() + "/" + _stepMax.ToString() + "\n" + text.ToString());
+                _textPanel.WritePublicText("Bauwagen Firmware - " + now.ToString() + " - Laufzeit: " + runtime.ToString() + "ms - Step: " + kernel_current_step.ToString() + "/" + kernel_stepMax.ToString() + "\n" + text.ToString());
             }
         }
 
@@ -147,7 +157,7 @@ namespace BaconfistSEInGameScript
         {
             StartTime = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
             incStep();
-            _textPanel = (GridTerminalSystem.GetBlockWithName(main_textPanelName) as IMyTextPanel);
+            _textPanel = (GridTerminalSystem.GetBlockWithName(kernel_textPanelName) as IMyTextPanel);
             if (_textPanel is IMyTextPanel)
             {
                 _textPanelLines.Clear();
@@ -165,14 +175,14 @@ namespace BaconfistSEInGameScript
             Int16 _out;
             if (Int16.TryParse(Storage, out _out) == true)
             {
-                _step = Convert.ToInt16(Storage);
-                _step++;
+                kernel_current_step = Convert.ToInt16(Storage);
+                kernel_current_step++;
             }
-            if (_step > _stepMax)
+            if (kernel_current_step > kernel_max_steps)
             {
-                _step = 1;
+                kernel_current_step = 1;
             }
-            Storage = _step.ToString();
+            Storage = kernel_current_step.ToString();
         }
 
         bool isMatchingStep(Int16 stepMultiplier)
@@ -181,7 +191,7 @@ namespace BaconfistSEInGameScript
             {
                 return false;
             }
-            return ((_step % stepMultiplier) == 1);
+            return ((kernel_current_step % stepMultiplier) == 1);
         }
 
         //Kernel end
