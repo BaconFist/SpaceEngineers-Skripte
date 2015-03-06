@@ -41,24 +41,42 @@ namespace BaconfistSEInGameScript
             boot();
             //Programms BEGIN
             (new ReactorInfo()).run(GridTerminalSystem, ReactorInfo_textPanel, ReactorInfo_reactor);
+            debug("[" + DateTime.Now.ToString() + "] ReactorInfo.");
             (new Clock()).run(GridTerminalSystem, Clock_textPanel);
+            debug("[" + DateTime.Now.ToString() + "] Clock.");
+            (new RefreshTextPanel()).run(GridTerminalSystem);
+            debug("[" + DateTime.Now.ToString() + "] RefreshTextPanel.");
             if (isMatchingStep(30))
             {
                 (new AssemblerCleaning()).run(GridTerminalSystem, AssemblerCleaning_target_cargo);
-                debug("[" + DateTime.Now.ToString() + "] Fertigungsroboter bereinigt.");    
+                debug("[" + DateTime.Now.ToString() + "] AssemblerCleaning.");
             }
             if (isMatchingStep(10))
             {
                 (new ProductionBlockStandBy()).run(GridTerminalSystem);
-                debug("[" + DateTime.Now.ToString() + "] inaktive Produktion in StandBy.");
+                debug("[" + DateTime.Now.ToString() + "] ProductionBlockStandBy.");
             }
             if (isMatchingStep(30))
             {
                 (new ProductionBlockWakeUp()).run(GridTerminalSystem);
-                debug("[" + DateTime.Now.ToString() + "] Produktion aufgeweckt.");
+                debug("[" + DateTime.Now.ToString() + "] ProductionBlockWakeUp.");
             }            
             //Programms END
             end();
+        }
+
+        class RefreshTextPanel
+        {
+            public void run(IMyGridTerminalSystem GridTerminalSystem)
+            {
+                List<IMyTerminalBlock> blocks = new List<IMyTerminalBlock>();
+                GridTerminalSystem.GetBlocksOfType<IMyTextPanel>(blocks, (x => (x as IMyFunctionalBlock).Enabled));
+                for (int i = 0; i < blocks.Count; i++)
+                {
+                    (blocks[i] as IMyFunctionalBlock).ApplyAction("OnOff_Off");
+                    (blocks[i] as IMyFunctionalBlock).ApplyAction("OnOff_On");
+                }
+            }
         }
 
         class Clock
