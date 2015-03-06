@@ -51,15 +51,15 @@ namespace BaconfistSEInGameScript
                 (new DetailedCargoDisplay()).run(GridTerminalSystem);
                 debug("[" + DateTime.Now.ToString() + "] DetailedCargoDisplay.");
             }
-            if (isMatchingStep(30))
-            {
-                (new AssemblerCleaning()).run(GridTerminalSystem, AssemblerCleaning_target_cargo);
-                debug("[" + DateTime.Now.ToString() + "] AssemblerCleaning.");
-            }
             if (isMatchingStep(10))
             {
                 (new ProductionBlockStandBy()).run(GridTerminalSystem);
                 debug("[" + DateTime.Now.ToString() + "] ProductionBlockStandBy.");
+            }
+            if (isMatchingStep(30))
+            {
+                (new AssemblerCleaning()).run(GridTerminalSystem, AssemblerCleaning_target_cargo);
+                debug("[" + DateTime.Now.ToString() + "] AssemblerCleaning.");
             }
             if (isMatchingStep(30))
             {
