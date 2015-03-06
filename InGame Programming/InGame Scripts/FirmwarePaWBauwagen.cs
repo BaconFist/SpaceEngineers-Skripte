@@ -30,7 +30,7 @@ namespace BaconfistSEInGameScript
         const String AssemblerCleaning_target_cargo = "Frachtcontainer Bauwagen";
 
         // Run-Settings
-        const Int16 kernel_max_steps = 60;
+        const Int16 kernel_max_steps = 30;
         Int16 kernel_current_step = 1;
         IMyTextPanel _textPanel;
         List<String> _textPanelLines = new List<string>();
@@ -47,15 +47,15 @@ namespace BaconfistSEInGameScript
                 (new AssemblerCleaning()).run(GridTerminalSystem, AssemblerCleaning_target_cargo);
                 debug("[" + DateTime.Now.ToString() + "] Fertigungsroboter bereinigt.");    
             }
-            if (isMatchingStep(120))
+            if (isMatchingStep(10))
             {
                 (new ProductionBlockStandBy()).run(GridTerminalSystem);
                 debug("[" + DateTime.Now.ToString() + "] inaktive Produktion in StandBy.");
             }
-            if (isMatchingStep(60))
+            if (isMatchingStep(30))
             {
                 (new ProductionBlockWakeUp()).run(GridTerminalSystem);
-                debug("[" + DateTime.Now.ToString() + "] Produktion .");
+                debug("[" + DateTime.Now.ToString() + "] Produktion aufgeweckt.");
             }            
             //Programms END
             end();
