@@ -13,7 +13,7 @@ using VRage;
 
 namespace BaconfistSEInGameScript
 {
-    class FirmwarePaWBauwagen
+    class BaseGridFirmware
     {
         IMyGridTerminalSystem GridTerminalSystem;
         String Storage;
