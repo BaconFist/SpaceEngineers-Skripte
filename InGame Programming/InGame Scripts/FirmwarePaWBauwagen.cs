@@ -30,7 +30,7 @@ namespace BaconfistSEInGameScript
         const String AssemblerCleaning_target_cargo = "Frachtcontainer Bauwagen";
 
         // Run-Settings
-        const Int16 kernel_max_steps = 30;
+        const Int16 kernel_max_steps = 60;
         Int16 kernel_current_step = 1;
         IMyTextPanel _textPanel;
         List<String> _textPanelLines = new List<string>();
@@ -47,6 +47,16 @@ namespace BaconfistSEInGameScript
                 (new AssemblerCleaning()).run(GridTerminalSystem, AssemblerCleaning_target_cargo);
                 debug("[" + DateTime.Now.ToString() + "] Fertigungsroboter bereinigt.");    
             }
+            if (isMatchingStep(120))
+            {
+                (new ProductionBlockStandBy()).run(GridTerminalSystem);
+                debug("[" + DateTime.Now.ToString() + "] inaktive Produktion in StandBy.");
+            }
+            if (isMatchingStep(60))
+            {
+                (new ProductionBlockWakeUp()).run(GridTerminalSystem);
+                debug("[" + DateTime.Now.ToString() + "] Produktion .");
+            }            
             //Programms END
             end();
         }
@@ -55,10 +65,10 @@ namespace BaconfistSEInGameScript
         {
             public void run(IMyGridTerminalSystem GridTerminalSystem, String textPanel)
             {
-                IMyTextPanel uhr = (GridTerminalSystem.GetBlockWithName(textPanel) as IMyTextPanel);
-                if (uhr is IMyTextPanel)
+                IMyTextPanel clock = (GridTerminalSystem.GetBlockWithName(textPanel) as IMyTextPanel);
+                if (clock is IMyTextPanel)
                 {
-                    uhr.WritePublicText(DateTime.Now.ToString().Replace(" ", "\n"));
+                    clock.WritePublicText(DateTime.Now.ToString().Replace(" ", "\n"));
                 }
             }
         }
@@ -111,6 +121,35 @@ namespace BaconfistSEInGameScript
                 if ((textPanel is IMyTextPanel) && (reactor is IMyReactor))
                 {
                     textPanel.WritePublicText(reactor.DetailedInfo + "\n\n letzte Aktualisierung:\n" + DateTime.Now.ToString());
+                }
+            }
+        }
+
+        class ProductionBlockStandBy
+        {
+            public void run(IMyGridTerminalSystem GridTerminalSystem)
+            {
+                List<IMyTerminalBlock> blocks = new List<IMyTerminalBlock>();
+                GridTerminalSystem.GetBlocksOfType<IMyProductionBlock>(blocks, (x => (x as IMyFunctionalBlock).Enabled));
+                for (int i = 0; i < blocks.Count; i++)
+                {
+                    if (!(blocks[i] as IMyProductionBlock).IsProducing)
+                    {
+                        blocks[i].ApplyAction("OnOff_Off");
+                    }
+                }
+            }
+        }
+
+        class ProductionBlockWakeUp
+        {
+            public void run(IMyGridTerminalSystem GridTerminalSystem)
+            {
+                List<IMyTerminalBlock> blocks = new List<IMyTerminalBlock>();
+                GridTerminalSystem.GetBlocksOfType<IMyTerminalBlock>(blocks, (x => !(x as IMyFunctionalBlock).Enabled));
+                for (int i = 0; i < blocks.Count; i++)
+                {
+                    blocks[i].ApplyAction("OnOff_On");
                 }
             }
         }
@@ -193,7 +232,6 @@ namespace BaconfistSEInGameScript
             }
             return ((kernel_current_step % stepMultiplier) == 1);
         }
-
         //Kernel end
 // End InGame-Script
     }

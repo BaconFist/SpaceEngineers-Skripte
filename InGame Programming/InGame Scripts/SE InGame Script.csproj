@@ -41,13 +41,13 @@
     <Compile Include="PowerStatusDisplay.cs" />
     <Compile Include="FirmwarePaWBauwagen.cs" />
     <Compile Include="SpaceEngineersInGameScriptTemplate.cs" />
-    <Compile Include="ProductionBlockOff.cs" />
+    <Compile Include="ProductionBlockStandBy.cs" />
     <Compile Include="AssemblerCleanUp.cs" />
     <Compile Include="BuildLevel.cs" />
     <Compile Include="CargoCapacityV2.cs" />
     <Compile Include="FrameWork.cs" />
     <Compile Include="OverallReactorUsage.cs" />
-    <Compile Include="ProductionBlockOn.cs" />
+    <Compile Include="ProductionBlockWakeUp.cs" />
     <Compile Include="RedAlert_v01.cs" />
     <Compile Include="RefreshTextPanels.cs" />
     <Compile Include="renamer.cs" />

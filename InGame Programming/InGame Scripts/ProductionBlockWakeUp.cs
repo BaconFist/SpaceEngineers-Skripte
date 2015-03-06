@@ -22,13 +22,22 @@ namespace BaconfistSEInGameScript
         // Script BEGIN
         void Main()
         {
-            List<IMyTerminalBlock> productionBlocks = new List<IMyTerminalBlock>();
-            GridTerminalSystem.GetBlocksOfType<IMyProductionBlock>(productionBlocks);
-            for (int i = 0; i < productionBlocks.Count; i++)
+            (new ProductionBlockWakeUp()).run(GridTerminalSystem);
+        }
+
+        class ProductionBlockWakeUp
+        {
+            public void run(IMyGridTerminalSystem GridTerminalSystem)
             {
-                productionBlocks[i].GetActionWithName("OnOff_On").Apply(productionBlocks[i]);
+                List<IMyTerminalBlock> blocks = new List<IMyTerminalBlock>();
+                GridTerminalSystem.GetBlocksOfType<IMyTerminalBlock>(blocks, (x => !(x as IMyFunctionalBlock).Enabled));
+                for (int i = 0; i < blocks.Count; i++)
+                {
+                    blocks[i].ApplyAction("OnOff_On");
+                }
             }
         }
+        
 
         // SCript END
     }
