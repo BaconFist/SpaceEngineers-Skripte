@@ -188,7 +188,7 @@ namespace BaconfistSEInGameScript
                 }
                 DateTime now = DateTime.Now;
                 long runtime = (now.Ticks / TimeSpan.TicksPerMillisecond) - StartTime;
-                _textPanel.WritePublicText("Bauwagen Firmware - " + now.ToString() + " - Laufzeit: " + runtime.ToString() + "ms - Step: " + kernel_current_step.ToString() + "/" + kernel_stepMax.ToString() + "\n" + text.ToString());
+                _textPanel.WritePublicText("Bauwagen Firmware - " + now.ToString() + " - Laufzeit: " + runtime.ToString() + "ms - Step: " + kernel_current_step.ToString() + "/" + kernel_max_steps.ToString() + "\n" + text.ToString());
             }
         }
 
