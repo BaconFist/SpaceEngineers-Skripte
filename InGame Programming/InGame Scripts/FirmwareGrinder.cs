@@ -12,7 +12,7 @@ using VRage;
 
 namespace BaconfistSEInGameScript
 {
-    class FirmwareHexler
+    class FirmwareGrinder
     {
         IMyGridTerminalSystem GridTerminalSystem;
         String Storage;
