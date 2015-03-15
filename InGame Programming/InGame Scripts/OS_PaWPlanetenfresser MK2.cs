@@ -12,7 +12,7 @@ using VRage;
 
 namespace BaconfistSEInGameScript
 {
-    class DetailedCargoDisplay
+    class OS_PaWPlanetenfresser_MK2
     {
         IMyGridTerminalSystem GridTerminalSystem;
         String Storage;
@@ -27,18 +27,19 @@ namespace BaconfistSEInGameScript
         {
 
             //options
-            const String textPanelName = "Textpanel";  // 1st char is seperator
-            const Int16 inventorySelectionMode = 0; // 0: All; 1: By Group; 2: By Names; 3: By Substring in Name;
-            const String inventorySelectionGroupNamesCSV = ";";  // 1st char is seperator
-            const String inventorySelectionNamesCSV = ";";  // 1st char is seperator 
-            const String inventorySelectionSubstringsCSV = ";";  // 1st char is seperator
-            const Int16 textPanelMaxLines = 44;
-            const String inventoryIndexTitle = "Lagerstand";
+            String textPanelName = "LCD Panel"; 
+            Int16 inventorySelectionMode = 3; // 0: All; 1: By Group; 2: By Names; 3: By Substring in Name;
+            String inventorySelectionGroupNamesCSV = ";";  // 1st char is seperator
+            String inventorySelectionNamesCSV = ";";  // 1st char is seperator 
+            String inventorySelectionSubstringsCSV = ";Drill;Container;Verbinder";  // 1st char is seperator
+            Int16 textPanelMaxLines = 22;
+            Int16 textPanelMaxChars = 90;
+            String inventoryIndexTitle = "Lagerstand";
 
-            const Int16 ISM_ALL = 0;
-            const Int16 ISM_GROUPS = 1;
-            const Int16 ISM_NAMES = 2;
-            const Int16 ISM_SUB = 3;
+            Int16 ISM_ALL = 0;
+            Int16 ISM_GROUPS = 1;
+            Int16 ISM_NAMES = 2;
+            Int16 ISM_SUB = 3;
 
             IMyGridTerminalSystem GridTerminalSystem;
 
@@ -60,11 +61,11 @@ namespace BaconfistSEInGameScript
                         {
                             for (int i_inventory = 0; i_inventory < blocks[i_blocks].GetInventoryCount(); i_inventory++)
                             {
+                                IMyInventory inventory = blocks[i_blocks].GetInventory(i_inventory);
+                                maxVol += (Convert.ToDouble(inventory.MaxVolume.ToString()) * 1000);
+                                curVol += (Convert.ToDouble(inventory.CurrentVolume.ToString()) * 1000);
                                 for (int i_item = 0; i_item < blocks[i_blocks].GetInventory(i_inventory).GetItems().Count; i_item++)
                                 {
-                                    IMyInventory inventory = blocks[i_blocks].GetInventory(i_inventory);
-                                    maxVol += Convert.ToDouble(inventory.MaxVolume.ToString());
-                                    curVol += Convert.ToDouble(inventory.CurrentVolume.ToString());
                                     IMyInventoryItem item = inventory.GetItems()[i_item];
                                     if (!items.ContainsKey(item.Content.SubtypeName))
                                     {
@@ -79,18 +80,18 @@ namespace BaconfistSEInGameScript
                         }
 
                         textPanel.WritePublicText(inventoryIndexTitle + " - " + DateTime.Now.ToString() + "\n", false);
-                        textPanel.WritePublicText(String.Format("{0:N0}", curVol) + "/" + String.Format("{0:N0}", maxVol) + "L - " + getPecent(maxVol, curVol).ToString() + "%\n", true);
-                        
+                        textPanel.WritePublicText("Volumen: " + String.Format("{0:N2}", curVol) + " / " + String.Format("{0:N2}", maxVol) + " L - " + String.Format("{0:N2}", getPecent(maxVol, curVol)) + "%\n", true);
+
                         String lines = "Items:";
                         for (int i_key = 0; i_key < keys.Count; i_key++)
                         {
                             lines += " [" + keys[i_key] + ":" + String.Format("{0:N0}", Math.Round(items[keys[i_key]], 0)) + "]";
                         }
-                        List<String> linesWrapped = WordWrap(lines, textPanelMaxLines);
+                        List<String> linesWrapped = WordWrap(lines, textPanelMaxChars);
                         for (int i = 0; i < linesWrapped.Count; i++)
                         {
                             textPanel.WritePublicText(linesWrapped[i] + "\n", true);
-                        }                            
+                        }
                     }
                 }
             }
@@ -107,7 +108,7 @@ namespace BaconfistSEInGameScript
                 }
                 else
                 {
-                    return Convert.ToInt32(Math.Round(100 * (val / max), 0));
+                    return (100 * (val / max));
                 }
             }
 

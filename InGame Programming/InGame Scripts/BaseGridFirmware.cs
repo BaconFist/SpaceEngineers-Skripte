@@ -34,7 +34,7 @@ namespace BaconfistSEInGameScript
         Int16 kernel_current_step = 1;
         IMyTextPanel _textPanel;
         List<String> _textPanelLines = new List<string>();
-        long StartTime; 
+        double StartTime; 
 
         void Main()
         {
@@ -181,12 +181,13 @@ namespace BaconfistSEInGameScript
         {
 
             //options
-            const String textPanelNamesCSV = ";Textpanel DetailedCargoDisplay 1;Textpanel DetailedCargoDisplay 2";  // 1st char is seperator
+            const String textPanelName = "Textpanel DetailedCargoDisplay";  // 1st char is seperator
             const Int16 inventorySelectionMode = 0; // 0: All; 1: By Group; 2: By Names; 3: By Substring in Name;
             const String inventorySelectionGroupNamesCSV = ";";  // 1st char is seperator
             const String inventorySelectionNamesCSV = ";";  // 1st char is seperator 
             const String inventorySelectionSubstringsCSV = ";";  // 1st char is seperator
-            const Int16 textPanelMaxLines = 60;
+            const Int16 textPanelMaxLines = 44;
+            const String inventoryIndexTitle = "Lagerstand";
 
             const Int16 ISM_ALL = 0;
             const Int16 ISM_GROUPS = 1;
@@ -198,9 +199,9 @@ namespace BaconfistSEInGameScript
             public void run(IMyGridTerminalSystem _GridTerminalSystem)
             {
                 GridTerminalSystem = _GridTerminalSystem;
-                
-                List<IMyTextPanel> textPanels = getTextPanelsFromCSV(textPanelNamesCSV);
-                if (textPanels.Count > 0)
+
+                IMyTextPanel textPanel = (GridTerminalSystem.GetBlockWithName(textPanelName) as IMyTextPanel);
+                if (textPanel is IMyTextPanel)
                 {
                     List<IMyTerminalBlock> blocks = getCargoContainers();
                     if (blocks.Count > 0)
@@ -216,28 +217,19 @@ namespace BaconfistSEInGameScript
                                     IMyInventoryItem item = blocks[i_blocks].GetInventory(i_inventory).GetItems()[i_item];
                                     if (!items.ContainsKey(item.Content.SubtypeName))
                                     {
-                                        items[item.Content.SubtypeName] = 0;
+                                        items.Add(item.Content.SubtypeName, 0);
                                         keys.Add(item.Content.SubtypeName);
                                     }
-                                    items[item.Content.SubtypeName] += Convert.ToDouble(item.Amount.ToString());
+                                    double amount = items[item.Content.SubtypeName];
+                                    items.Remove(item.Content.SubtypeName);
+                                    items.Add(item.Content.SubtypeName, amount + Convert.ToDouble(item.Amount.ToString()));
                                 }
                             }
                         }
-                        IMyTextPanel textPanel = textPanels[0];
-                        Int16 i_textPanel = 0;
+                        textPanel.WritePublicText(inventoryIndexTitle + " - " + DateTime.Now.ToString() + "\n", false);
                         for (int i_key = 0; i_key < keys.Count; i_key++)
                         {
-                            if (i_textPanel % (textPanelMaxLines - 1) == 0)
-                            {
-                                textPanel = textPanels[i_textPanel];
-                                if (!(textPanel is IMyTextPanel))
-                                {
-                                    break;
-                                }
-                                textPanel.WritePublicText("Inventory Index - " + DateTime.Now.ToString(), false);
-                                i_textPanel++;
-                            }
-                            textPanel.WritePublicText(keys[i_key] + ": " + String.Format("{0:N}", items[keys[i_key]]) + "\n");
+                            textPanel.WritePublicText(keys[i_key] + ": " + String.Format("{0:N0}", Math.Round(items[keys[i_key]], 0)) + "\n", true);
                         }
                     }
                 }
@@ -269,8 +261,8 @@ namespace BaconfistSEInGameScript
                 }
                 else if (inventorySelectionMode == ISM_SUB)
                 {
-                    List<String> subs = readCSV(inventorySelectionSubstringsCSV);
-                    for (int i_subs = 0; i_subs < subs.Count; i_subs++)
+                    String[] subs = readCSV(inventorySelectionSubstringsCSV);
+                    for (int i_subs = 0; i_subs < subs.Length; i_subs++)
                     {
                         blocks.AddList<IMyTerminalBlock>(GridTerminalSystem.Blocks.FindAll(x => (x.CustomName.Contains(subs[i_subs]) && x.HasInventory())));
                     }
@@ -295,27 +287,10 @@ namespace BaconfistSEInGameScript
 
 
 
-            List<String> readCSV(String csv)
+            String[] readCSV(String csv)
             {
                 String seperator = csv.Substring(0, 1);
-                return csv.Split(new String[] { seperator }, StringSplitOptions.RemoveEmptyEntries).ToList<String>();
-            }
-
-            List<IMyTextPanel> getTextPanelsFromCSV(String csv)
-            {
-                List<IMyTextPanel> textPanels = new List<IMyTextPanel>();
-                List<String> textPanelNames = readCSV(textPanelNamesCSV);
-
-                for (int i = 0; i < textPanelNames.Count; i++)
-                {
-                    IMyTextPanel tempTextPanel = (GridTerminalSystem.GetBlockWithName(textPanelNames[i]) as IMyTextPanel);
-                    if (tempTextPanel is IMyTextPanel)
-                    {
-                        textPanels.Add(tempTextPanel);
-                    }
-                }
-
-                return textPanels;
+                return csv.Split(new String[] { seperator }, StringSplitOptions.RemoveEmptyEntries);
             }
         }
 
@@ -352,7 +327,7 @@ namespace BaconfistSEInGameScript
                     text.AppendLine(_textPanelLines[i].Trim());                    
                 }
                 DateTime now = DateTime.Now;
-                long runtime = (now.Ticks / TimeSpan.TicksPerMillisecond) - StartTime;
+                double runtime = (now.Ticks / TimeSpan.TicksPerMillisecond) - StartTime;
                 _textPanel.WritePublicText("Bauwagen Firmware - " + now.ToString() + " - Laufzeit: " + runtime.ToString() + "ms - Step: " + kernel_current_step.ToString() + "/" + kernel_max_steps.ToString() + "\n" + text.ToString());
             }
         }
@@ -369,8 +344,7 @@ namespace BaconfistSEInGameScript
                 if (_textPanelLines.Count > 0)
                 {
                     _textPanelLines.RemoveAt(0);
-                }
-                
+                }                
             }
         }
 

@@ -21,10 +21,7 @@ namespace BaconfistSEInGameScript
         {
             for (int i = 0; i < GridTerminalSystem.Blocks.Count; i++)
             {
-                if (GridTerminalSystem.Blocks[i].CustomName.IndexOf("Hexler") < 0)
-                {
-                    GridTerminalSystem.Blocks[i].SetCustomName(GridTerminalSystem.Blocks[i].CustomName + " Hexler");
-                }
+                GridTerminalSystem.Blocks[i].SetCustomName(GridTerminalSystem.Blocks[i].CustomName + " (Planetenfresser MK1)");
             }
         }
         // End InGame-Script

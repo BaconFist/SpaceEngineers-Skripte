@@ -12,39 +12,43 @@ using VRage;
 
 namespace BaconfistSEInGameScript
 {
-    class DetailedCargoDisplay
+    class OS_FrachtContainerPAW_1
     {
         IMyGridTerminalSystem GridTerminalSystem;
         String Storage;
         // Begin InGame-Script
-
         void Main()
         {
-            (new DetailedCargoDisplay()).run(GridTerminalSystem);
+            (new DetailedCargoDisplay()).run(GridTerminalSystem, "LCD FrachtContainer 1", ";FrachtContainer 1", "Lagerstand FrachtContainer 1");
+            (new DetailedCargoDisplay()).run(GridTerminalSystem, "LCD FrachtContainer 2", ";FrachtContainer 2", "Lagerstand FrachtContainer 2");
         }
 
         class DetailedCargoDisplay
         {
 
             //options
-            const String textPanelName = "Textpanel";  // 1st char is seperator
-            const Int16 inventorySelectionMode = 0; // 0: All; 1: By Group; 2: By Names; 3: By Substring in Name;
-            const String inventorySelectionGroupNamesCSV = ";";  // 1st char is seperator
-            const String inventorySelectionNamesCSV = ";";  // 1st char is seperator 
-            const String inventorySelectionSubstringsCSV = ";";  // 1st char is seperator
-            const Int16 textPanelMaxLines = 44;
-            const String inventoryIndexTitle = "Lagerstand";
+            public String textPanelName = "LCD FrachtContainer 1";
+            public Int16 inventorySelectionMode = 3; // 0: All; 1: By Group; 2: By Names; 3: By Substring in Name;
+            public String inventorySelectionGroupNamesCSV = ";";  // 1st char is seperator
+            public String inventorySelectionNamesCSV = ";FrachtContainer 1";  // 1st char is seperator 
+            public String inventorySelectionSubstringsCSV = ";";  // 1st char is seperator
+            public Int16 textPanelMaxLines = 14;
+            public Int16 textPanelMaxChars = 70;
+            public String inventoryIndexTitle = "Lagerstand";
 
-            const Int16 ISM_ALL = 0;
-            const Int16 ISM_GROUPS = 1;
-            const Int16 ISM_NAMES = 2;
-            const Int16 ISM_SUB = 3;
+            public Int16 ISM_ALL = 0;
+            public Int16 ISM_GROUPS = 1;
+            public Int16 ISM_NAMES = 2;
+            public Int16 ISM_SUB = 3;
 
             IMyGridTerminalSystem GridTerminalSystem;
 
-            public void run(IMyGridTerminalSystem _GridTerminalSystem)
+            public void run(IMyGridTerminalSystem _GridTerminalSystem, String _textPanelName, String _inventorySelectionSubstringsCSV, String _inventoryIndexTitle)
             {
                 GridTerminalSystem = _GridTerminalSystem;
+                textPanelName = _textPanelName;
+                inventorySelectionSubstringsCSV = _inventorySelectionSubstringsCSV;
+                inventoryIndexTitle = _inventoryIndexTitle;
 
                 IMyTextPanel textPanel = (GridTerminalSystem.GetBlockWithName(textPanelName) as IMyTextPanel);
                 if (textPanel is IMyTextPanel)
@@ -60,11 +64,11 @@ namespace BaconfistSEInGameScript
                         {
                             for (int i_inventory = 0; i_inventory < blocks[i_blocks].GetInventoryCount(); i_inventory++)
                             {
+                                IMyInventory inventory = blocks[i_blocks].GetInventory(i_inventory);
+                                maxVol += (Convert.ToDouble(inventory.MaxVolume.ToString()) * 1000);
+                                curVol += (Convert.ToDouble(inventory.CurrentVolume.ToString()) * 1000);
                                 for (int i_item = 0; i_item < blocks[i_blocks].GetInventory(i_inventory).GetItems().Count; i_item++)
                                 {
-                                    IMyInventory inventory = blocks[i_blocks].GetInventory(i_inventory);
-                                    maxVol += Convert.ToDouble(inventory.MaxVolume.ToString());
-                                    curVol += Convert.ToDouble(inventory.CurrentVolume.ToString());
                                     IMyInventoryItem item = inventory.GetItems()[i_item];
                                     if (!items.ContainsKey(item.Content.SubtypeName))
                                     {
@@ -79,18 +83,18 @@ namespace BaconfistSEInGameScript
                         }
 
                         textPanel.WritePublicText(inventoryIndexTitle + " - " + DateTime.Now.ToString() + "\n", false);
-                        textPanel.WritePublicText(String.Format("{0:N0}", curVol) + "/" + String.Format("{0:N0}", maxVol) + "L - " + getPecent(maxVol, curVol).ToString() + "%\n", true);
-                        
+                        textPanel.WritePublicText("Volumen: " + String.Format("{0:N2}", curVol) + " / " + String.Format("{0:N2}", maxVol) + " L - " + String.Format("{0:N2}", getPecent(maxVol, curVol)) + "%\n", true);
+
                         String lines = "Items:";
                         for (int i_key = 0; i_key < keys.Count; i_key++)
                         {
                             lines += " [" + keys[i_key] + ":" + String.Format("{0:N0}", Math.Round(items[keys[i_key]], 0)) + "]";
                         }
-                        List<String> linesWrapped = WordWrap(lines, textPanelMaxLines);
+                        List<String> linesWrapped = WordWrap(lines, textPanelMaxChars);
                         for (int i = 0; i < linesWrapped.Count; i++)
                         {
                             textPanel.WritePublicText(linesWrapped[i] + "\n", true);
-                        }                            
+                        }
                     }
                 }
             }
@@ -107,7 +111,7 @@ namespace BaconfistSEInGameScript
                 }
                 else
                 {
-                    return Convert.ToInt32(Math.Round(100 * (val / max), 0));
+                    return (100 * (val / max));
                 }
             }
 

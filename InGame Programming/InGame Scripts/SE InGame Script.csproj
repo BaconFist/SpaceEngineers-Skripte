@@ -36,10 +36,14 @@
   <ItemGroup>
     <Compile Include="CargoLevelDisplay.cs" />
     <Compile Include="DetailedCargoDisplay.cs" />
-    <Compile Include="FirmwareHexler.cs" />
+    <Compile Include="FirmwareGrinder.cs" />
     <Compile Include="DropStones-1.cs" />
+    <Compile Include="OS_FrachtContainerPAW_1.cs" />
+    <Compile Include="OS_PaWPlanetenfresser MK2.cs" />
+    <Compile Include="OS_PaW_Tower.cs" />
+    <Compile Include="OS_Production.cs" />
     <Compile Include="PowerStatusDisplay.cs" />
-    <Compile Include="FirmwarePaWBauwagen.cs" />
+    <Compile Include="BaseGridFirmware.cs" />
     <Compile Include="RefreshTxtPanels.cs" />
     <Compile Include="SpaceEngineersInGameScriptTemplate.cs" />
     <Compile Include="ProductionBlockStandBy.cs" />
@@ -52,6 +56,7 @@
     <Compile Include="RedAlert_v01.cs" />
     <Compile Include="RefreshTextPanels.cs" />
     <Compile Include="renamer.cs" />
+    <Compile Include="SuckInventory.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
