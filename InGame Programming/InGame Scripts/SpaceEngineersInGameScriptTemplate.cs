@@ -20,7 +20,6 @@ namespace BaconfistSEInGameScript
 // Begin InGame-Script
         void Main()
         {
-
         }
 // End InGame-Script
     }

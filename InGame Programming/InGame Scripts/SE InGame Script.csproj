@@ -38,6 +38,8 @@
     <Compile Include="DetailedCargoDisplay.cs" />
     <Compile Include="FirmwareHexler.cs" />
     <Compile Include="DropStones-1.cs" />
+    <Compile Include="FormatHelper.cs" />
+    <Compile Include="LandingGearRelock.cs" />
     <Compile Include="PowerStatusDisplay.cs" />
     <Compile Include="FirmwarePaWBauwagen.cs" />
     <Compile Include="RefreshTxtPanels.cs" />
