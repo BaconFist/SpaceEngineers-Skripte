@@ -42,7 +42,7 @@
     <Compile Include="OS_PaWPlanetenfresser MK2.cs" />
     <Compile Include="OS_PaW_Tower.cs" />
     <Compile Include="OS_Production.cs" />
-    <Compile Include="FormatHelper.cs" />
+    <Compile Include="Helper_DasBaconFist_PanelMatrixWriter.cs" />
     <Compile Include="LandingGearRelock.cs" />
     <Compile Include="PowerStatusDisplay.cs" />
     <Compile Include="BaseGridFirmware.cs" />
