@@ -45,7 +45,7 @@ namespace BaconfistSEInGameScript
              * Update & Bugs
              * =============
              * find latest Version at GitHub: http://git.io/hfAh
-             * report bugs at git hub (http://git.io/hfxk) or write a comment on Steam
+             * report bugs at GitHub (http://git.io/hfxk) or write a comment on Steam
              * 
              * Usage
              * =====
