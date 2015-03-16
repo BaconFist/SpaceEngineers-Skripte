@@ -40,6 +40,13 @@ namespace BaconfistSEInGameScript
              * WTFPL – Do What the Fuck You Want to Public License
              * http://www.wtfpl.net/
              * 
+             * Coded by: http://steamcommunity.com/profiles/76561198018146795/
+             * 
+             * Update & Bugs
+             * =============
+             * find latest Version at GitHub: http://git.io/hfAh
+             * report bugs at git hub (http://git.io/hfxk) or write a comment on Steam
+             * 
              * Usage
              * =====
              * - Name you panels with (TextPanelMatrix:*Matrix-Id*:*rownumber*:*colnumer*)
