@@ -91,7 +91,7 @@ namespace BaconfistSEInGameScript
             
             public void writeToTextPanelMatrix(string rawText, string matrixId, int rows, int cols, int panelLines, int panelChars)
             {
-                List<List<IMyTextPanel>> panelMatrix = panelMatrixBuilder("test", 2, 2);
+                List<List<IMyTextPanel>> panelMatrix = panelMatrixBuilder(matrixId, rows, cols);
                 writeToTextPanelMatrix(rawText, panelMatrix, panelLines, panelChars);
             }
 
