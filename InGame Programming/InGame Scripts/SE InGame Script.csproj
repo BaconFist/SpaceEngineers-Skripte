@@ -34,19 +34,32 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="AirLockControl_1.cs" />
     <Compile Include="CargoLevelDisplay.cs" />
+    <Compile Include="CloseDoors_1.cs" />
+    <Compile Include="CockpitKillswitch_1.cs" />
+    <Compile Include="DamageDisplay.cs" />
+    <Compile Include="DasBaconfist_InventoryDisplay.cs" />
     <Compile Include="DetailedCargoDisplay.cs" />
+    <Compile Include="DON.cs" />
+    <Compile Include="DynamicActionScript.cs" />
+    <Compile Include="DoorLockdown.cs" />
+    <Compile Include="DynMenu.cs" />
     <Compile Include="FirmwareGrinder.cs" />
     <Compile Include="DropStones-1.cs" />
+    <Compile Include="Helper_DasBaconfist_WordWrap.cs" />
     <Compile Include="OS_FrachtContainerPAW_1.cs" />
+    <Compile Include="OS_Horizon.cs" />
     <Compile Include="OS_PaWPlanetenfresser MK2.cs" />
     <Compile Include="OS_PaW_Tower.cs" />
     <Compile Include="OS_Production.cs" />
     <Compile Include="Helper_DasBaconFist_PanelMatrixWriter.cs" />
     <Compile Include="LandingGearRelock.cs" />
+    <Compile Include="powerSave_1.cs" />
     <Compile Include="PowerStatusDisplay.cs" />
     <Compile Include="BaseGridFirmware.cs" />
     <Compile Include="RefreshTxtPanels.cs" />
+    <Compile Include="SlimBlockDmg_1.cs" />
     <Compile Include="SpaceEngineersInGameScriptTemplate.cs" />
     <Compile Include="ProductionBlockStandBy.cs" />
     <Compile Include="AssemblerCleanUp.cs" />
@@ -79,6 +92,9 @@
     <Reference Include="VRage.Math">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\VRage.Math.dll</HintPath>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram1.cd" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

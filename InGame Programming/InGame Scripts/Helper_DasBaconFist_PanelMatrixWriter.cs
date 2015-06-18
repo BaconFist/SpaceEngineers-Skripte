@@ -21,19 +21,26 @@ namespace BaconfistSEInGameScript
 
         void Main()
         {
-           // Description in class                       
-           // (new DasBaconFist_PanelMatrixWriter(GridTerminalSystem)).writeToTextPanelMatrix("some text you want to display", "MyAwesomeMatrix", 2, 2, 10, 30);
+            DasBaconFist_PanelMatrixWriter writer = new DasBaconFist_PanelMatrixWriter(GridTerminalSystem);
+            writer.AutoUpdate();
         }
 
         class DasBaconFist_PanelMatrixWriter
         {
             /*
+             * Version 1.1.0
+             * 
              * WTF?
              * ====
              * This class can write Text to multiple panels arranged in a grid/matrix as a 2x2 Field or 3x5 field or whatever.
              * Features 
              * > use multiple IMyTextPanel as one big Display
              * > automatic wordwrap included
+             * > update 1: 
+             *          - automatic writing from other panel (mark the TextPanel u want to display on a Matrix with (TextPanelMatrix => *targetMatriyId )
+             *          - line and col count is now resolved by the first panels (0:0) fonstSize -> chars is now Size * 100 & lines is size * 30
+             *          - row & col count not longer required
+             * 
              * 
              * License
              * =======
@@ -50,7 +57,7 @@ namespace BaconfistSEInGameScript
              * Usage
              * =====
              * - Name you panels with (TextPanelMatrix:*Matrix-Id*:*rownumber*:*colnumer*)
-             * - call (new DasBaconFist_PanelMatrixWriter(GridTerminalSystem)).writeToTextPanelMatrix(theTextToWrite, "Matrix-Id", *number of rows*, *number of columns*, *number of lines that fit on one TextPanel*, *number of chars in a line per panel*);
+             * - call (new DasBaconFist_PanelMatrixWriter(GridTerminalSystem)).writeToTextPanelMatrix(theTextToWrite, "Matrix-Id");
              * 
              * Example
              * =======
@@ -69,14 +76,10 @@ namespace BaconfistSEInGameScript
              * 
              * 
              * with this setup you have to call it like this:
-             *      (new DasBaconFist_PanelMatrixWriter(GridTerminalSystem)).writeToTextPanelMatrix("some text you want to display", "MyAwesomeMatrix", 2, 2, 10, 30);
-             *                                                                                               ||                             ||          |  |   |   |
-             *        text to be written --------------------------------------------------------------------^^                             ||          |  |   |   |
-             *        Unique Id of the TextPanelMatrix -------------------------------------------------------------------------------------^^          |  |   |   |
-             *        number of rows (panels from top to bottom) ---------------------------------------------------------------------------------------^  |   |   |
-             *        number of columns (panels from left to right) ---------------------------------------------------------------------------------------^   |   |
-             *        lines per panel -------------------------------------------------------------------------------------------------------------------------^   |
-             *        chars per line per panel --------------------------------------------------------------------------------------------------------------------^           * 
+             *      (new DasBaconFist_PanelMatrixWriter(GridTerminalSystem)).writeToTextPanelMatrix("some text you want to display", "MyAwesomeMatrix");
+             *                                                                                               ||                             ||       
+             *        text to be written --------------------------------------------------------------------^^                             ||       
+             *        Unique Id of the TextPanelMatrix -------------------------------------------------------------------------------------^^       
              *      
              * 
              */
@@ -87,16 +90,19 @@ namespace BaconfistSEInGameScript
             {
                 GridTerminalSystem = SE_GridTerminalSystem;
             }
-
             
-            public void writeToTextPanelMatrix(string rawText, string matrixId, int rows, int cols, int panelLines, int panelChars)
+            public void writeToTextPanelMatrix(string rawText, string matrixId)
             {
-                List<List<IMyTextPanel>> panelMatrix = panelMatrixBuilder(matrixId, rows, cols);
-                writeToTextPanelMatrix(rawText, panelMatrix, panelLines, panelChars);
+                List<List<IMyTextPanel>> panelMatrix = panelMatrixBuilder(matrixId);
+                writeToTextPanelMatrix(rawText, panelMatrix);
             }
 
-            private List<List<IMyTextPanel>> panelMatrixBuilder(string matrixId, int rows, int cols)
+            private List<List<IMyTextPanel>> panelMatrixBuilder(string matrixId)
             {
+                Size size = resolveMatrixSize(matrixId);
+                int rows = size.row;
+                int cols = size.col;
+
                 List<List<IMyTextPanel>> matrix = new List<List<IMyTextPanel>>();
                 for (int i_row = 0; i_row < rows; i_row++)
                 {
@@ -117,8 +123,18 @@ namespace BaconfistSEInGameScript
                 return matrix;
             }
 
-            private void writeToTextPanelMatrix(string rawText, List<List<IMyTextPanel>> panelMatrix, int panelLines, int panelChars)
+            private void writeToTextPanelMatrix(string rawText, List<List<IMyTextPanel>> panelMatrix)
             {
+                if (! (panelMatrix.Count > 0 && panelMatrix[0].Count > 0))
+                {
+                    return;
+                }
+               // int panelLines = Convert.ToInt32(Math.Floor(Convert.ToDouble(panelMatrix[0][0].GetProperty("FontSize")) * 30));
+               // int panelChars = Convert.ToInt32(Math.Floor(Convert.ToDouble(panelMatrix[0][0].GetProperty("FontSize")) * 100));
+
+                 int panelLines = 15;
+                 int panelChars = 60;
+
                 string text = rawText;
                 int panelRowCount = panelMatrix.Count;
                 int panelColumnCount = 0;
@@ -166,6 +182,83 @@ namespace BaconfistSEInGameScript
                     }
                 }
             }
+
+
+            /* writes Text from a single Panel to the Matrix
+             * add following to the source (Panel with the text you want to display) => (TextPanelMatrix => *Matrix-Id*)
+             * example: 
+             * LCDs with matrix on it => "LCD-Screen 17 (TextPanelMatrix:TheCoon:3:2)
+             * LCD wirh source => "LCD-Screen 32 My Cargo (TextPanelMatrix => TheCoon)
+             *  now it will push the Text from LCD-Screen 32 to the Matrix defined in LCD-Screen 17
+             * 
+             * */
+            public void AutoUpdate()
+            {
+                List<IMyTerminalBlock> sourcePanels = new List<IMyTerminalBlock>();
+                GridTerminalSystem.GetBlocksOfType<IMyTextPanel>(sourcePanels, (x => x.CustomName.Contains("TextPanelMatrix =>")));
+                for (int i = 0; i < sourcePanels.Count; i++)
+                {
+                    string matrixId = parseTargetMatrix(sourcePanels[i].CustomName);
+                    if (matrixId != null)
+                    {
+                        this.writeToTextPanelMatrix((sourcePanels[i] as IMyTextPanel).GetPublicText(), matrixId);
+                    }
+                }
+            }
+
+            private string parseTargetMatrix(string customName)
+            {
+                int start = customName.IndexOf("TextPanelMatrix =>");
+                int count = customName.IndexOf(")", start) - start;
+                String[] parts = customName.Substring(start, count).Split('>');
+                if (parts.Length == 2)
+                {
+                    return parts[1].Trim(new Char[]{')',' '});
+                }
+
+                return null;
+            }
+
+            private Size resolveMatrixSize(string MatrixId)
+            {
+                Int32 col = 0;
+                Int32 row = 0;
+                List<IMyTerminalBlock> blocks = new List<IMyTerminalBlock>();
+                GridTerminalSystem.GetBlocksOfType<IMyTerminalBlock>(blocks, (x => x.CustomName.Contains(MatrixId)));
+                for (int i = 0; i < blocks.Count; i++)
+                {
+                    int start = blocks[i].CustomName.IndexOf("(TextPanelMatrix");
+                    int count = blocks[i].CustomName.IndexOf(")", start) - start;
+
+                    //0: TextPanelMatrix / 1:MatrixId / 2: rows / 3:cols
+                    String[] parts = blocks[i].CustomName.Substring(start, count).Split(':');
+                    if (parts.Length == 4)
+                    {
+                        Int32 t_row;
+                        if (Int32.TryParse(parts[2].Trim(new Char[]{':',')'}), out t_row))
+                        {
+                            row = Math.Max(row, t_row);
+                        }
+                        Int32 t_col;
+                        if (Int32.TryParse(parts[3].Trim(new Char[] { ':', ')' }), out t_col))
+                        {
+                            col = Math.Max(col, t_col);
+                        }
+                    }
+                }
+                Size size = new Size();
+                size.col = col;
+                size.row = row;
+
+                return size;
+            }
+
+            class Size
+            {
+                public Int32 col;
+                public Int32 row;
+            }
+
         }
         
         // End InGame-Script

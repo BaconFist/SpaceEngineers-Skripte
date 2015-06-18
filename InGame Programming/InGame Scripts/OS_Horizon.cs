@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
 using Sandbox.ModAPI.Ingame;
 using Sandbox.ModAPI.Interfaces;
 using Sandbox.Common.ObjectBuilders;
@@ -12,38 +13,57 @@ using VRage;
 
 namespace BaconfistSEInGameScript
 {
-    class OS_PaWPlanetenfresser_MK2
+    class OS_Horizon
     {
         IMyGridTerminalSystem GridTerminalSystem;
         String Storage;
         // Begin InGame-Script
-
         void Main()
         {
-            (new DetailedCargoDisplay()).run(GridTerminalSystem);
+
+            try
+            {
+                OsKernel OS = new OsKernel(GridTerminalSystem, 30);
+                OS.setOutput("Texttafel Brücke SB");
+                OS.setOutputChars(70);
+                OS.setOutputLines(17);
+                OS.setTitle("=V=.Horizon");
+
+                if (OS.isTick(10))
+                {
+                    (new DetailedCargoDisplay()).run(GridTerminalSystem, OS);
+                }
+            }
+            catch (Exception e)
+            {
+                IMyTextPanel error = GridTerminalSystem.GetBlockWithName("LCD-Schirm ERR") as IMyTextPanel;
+                if (error is IMyTextPanel)
+                {
+                    error.WritePublicText(e.Message, true);
+                }
+            }
         }
 
         class DetailedCargoDisplay
         {
 
             //options
-            String textPanelName = "LCD-Schirm"; 
-            Int16 inventorySelectionMode = 3; // 0: All; 1: By Group; 2: By Names; 3: By Substring in Name;
-            String inventorySelectionGroupNamesCSV = ";";  // 1st char is seperator
-            String inventorySelectionNamesCSV = ";";  // 1st char is seperator 
-            String inventorySelectionSubstringsCSV = ";Drill;Fracht;Verbinder";  // 1st char is seperator
-            Int16 textPanelMaxLines = 22;
-            Int16 textPanelMaxChars = 90;
-            String inventoryIndexTitle = "Lagerstand";
+            const String textPanelName = "Texttafel Brücke BB";  // 1st char is seperator
+            const Int16 inventorySelectionMode = 0; // 0: All; 1: By Group; 2: By Names; 3: By Substring in Name;
+            const String inventorySelectionGroupNamesCSV = ";";  // 1st char is seperator
+            const String inventorySelectionNamesCSV = ";";  // 1st char is seperator 
+            const String inventorySelectionSubstringsCSV = ";";  // 1st char is seperator
+            const Int16 textPanelMaxLines = 44;
+            const String inventoryIndexTitle = "Lagerstand";
 
-            Int16 ISM_ALL = 0;
-            Int16 ISM_GROUPS = 1;
-            Int16 ISM_NAMES = 2;
-            Int16 ISM_SUB = 3;
+            const Int16 ISM_ALL = 0;
+            const Int16 ISM_GROUPS = 1;
+            const Int16 ISM_NAMES = 2;
+            const Int16 ISM_SUB = 3;
 
             IMyGridTerminalSystem GridTerminalSystem;
 
-            public void run(IMyGridTerminalSystem _GridTerminalSystem)
+            public void run(IMyGridTerminalSystem _GridTerminalSystem, OsKernel OS)
             {
                 GridTerminalSystem = _GridTerminalSystem;
 
@@ -61,11 +81,11 @@ namespace BaconfistSEInGameScript
                         {
                             for (int i_inventory = 0; i_inventory < blocks[i_blocks].GetInventoryCount(); i_inventory++)
                             {
-                                IMyInventory inventory = blocks[i_blocks].GetInventory(i_inventory);
-                                maxVol += (Convert.ToDouble(inventory.MaxVolume.ToString()) * 1000);
-                                curVol += (Convert.ToDouble(inventory.CurrentVolume.ToString()) * 1000);
                                 for (int i_item = 0; i_item < blocks[i_blocks].GetInventory(i_inventory).GetItems().Count; i_item++)
                                 {
+                                    IMyInventory inventory = blocks[i_blocks].GetInventory(i_inventory);
+                                    maxVol += Convert.ToDouble(inventory.MaxVolume.ToString());
+                                    curVol += Convert.ToDouble(inventory.CurrentVolume.ToString());
                                     IMyInventoryItem item = inventory.GetItems()[i_item];
                                     if (!items.ContainsKey(item.Content.SubtypeName))
                                     {
@@ -79,15 +99,15 @@ namespace BaconfistSEInGameScript
                             }
                         }
                         StringBuilder lines = new StringBuilder();
-
                         lines.AppendLine(inventoryIndexTitle + " - " + DateTime.Now.ToString());
-                        lines.AppendLine("Volumen: " + String.Format("{0:N2}", curVol) + " / " + String.Format("{0:N2}", maxVol) + " L - " + String.Format("{0:N2}", getPecent(maxVol, curVol)) + "%");
+                        lines.AppendLine(String.Format("{0:N0}", curVol) + "/" + String.Format("{0:N0}", maxVol) + "L - " + getPecent(maxVol, curVol).ToString() + "%");
+                        
+                        lines.AppendLine("Items:");
                         for (int i_key = 0; i_key < keys.Count; i_key++)
                         {
-                            lines.AppendLine("[" + keys[i_key] + ":" + String.Format("{0:N0}", Math.Round(items[keys[i_key]], 0)) + "]");
+                            lines.AppendLine(" [" + keys[i_key] + ":" + String.Format("{0:N0}", Math.Round(items[keys[i_key]], 0)) + "] ");
                         }
-                       String linesWrapped = wordWrap(lines.ToString(), textPanelMaxChars, true);
-                       textPanel.WritePublicText(linesWrapped, false);
+                        OS.write(lines.ToString(), textPanel);                        
                     }
                 }
             }
@@ -104,7 +124,7 @@ namespace BaconfistSEInGameScript
                 }
                 else
                 {
-                    return (100 * (val / max));
+                    return Convert.ToInt32(Math.Round(100 * (val / max), 0));
                 }
             }
 
@@ -165,19 +185,88 @@ namespace BaconfistSEInGameScript
                 String seperator = csv.Substring(0, 1);
                 return csv.Split(new String[] { seperator }, StringSplitOptions.RemoveEmptyEntries);
             }
+        }
+
+        class OsKernel
+        {
+            static Int32 _tick = 0;
+            Int32 _tick_limit;
+            Int32 outputTextPanel_lines = 30;
+            Int32 outputTextPanel_chars = 30;
+            IMyTextPanel outputTextPanel;
+            public IMyGridTerminalSystem GridTerminalSystem;
+            String title;
+
+            public OsKernel(IMyGridTerminalSystem _GridTerminalSystem, Int32 tick_limit)
+            {
+                _tick_limit = tick_limit;
+                GridTerminalSystem = _GridTerminalSystem;
+                tickProcess();
+            }
+
+            public void write(string text, bool append = false, bool keepLineBreaks = true)
+            {
+                write(text, this.outputTextPanel, append, keepLineBreaks);
+            }
+
+            public void write(string text, IMyTextPanel target = null, bool append = false, bool keepLineBreaks = true)
+            {
+                int lineWidth = (int)Math.Floor(Convert.ToDouble(target.GetProperty("FontSize").ToString())*90);
+                target.WritePublicText(wordWrap(text, lineWidth, keepLineBreaks), append);
+            }
+
+            public void setTitle(String val)
+            {
+                title = val;
+            }
+
+            public string getTitle()
+            {
+                return this.title;
+            }
+
+            public void setOutputChars(Int32 val)
+            {
+                outputTextPanel_chars = val;
+            }
+
+            public void setOutputLines(Int32 val)
+            {
+                outputTextPanel_lines = val;
+            }
+
+            public void setOutput(String outputPanelName)
+            {
+                outputTextPanel = (GridTerminalSystem.GetBlockWithName(outputPanelName) as IMyTextPanel);
+            }
+
+           
+
+            void tickProcess()
+            {
+                _tick++;
+                if (_tick > _tick_limit)
+                {
+                    _tick = 1;
+                }
+            }
+
+            public bool isTick(Int32 tick)
+            {
+                return ((tick % _tick) == 0);
+            }
 
             /*
-        * WTF?
-        * ====
-        * automatic word-wrap
-        * 
-        * > text = text to be wrapped
-        * > lineWidth = max characters per line
-        * > keepLineBreaks =   true-> keep existing linebreaks, false-> remove linebreakes and repalce with space
-        */
+         * WTF?
+         * ====
+         * automatic word-wrap
+         * 
+         * > text = text to be wrapped
+         * > lineWidth = max characters per line
+         * > keepLineBreaks =   true-> keep existing linebreaks, false-> remove linebreakes and repalce with space
+         */
             public string wordWrap(string text, int lineWidth, bool keepLineBreaks = true)
             {
-                int computedLineWidth = lineWidth - 2;
                 Char[] trimChars = new Char[] { ' ', '\n' };
                 StringBuilder wrapped = new StringBuilder();
                 if (keepLineBreaks == false)
@@ -190,7 +279,7 @@ namespace BaconfistSEInGameScript
                 text = text.Trim(trimChars);
                 for (int i = 0; (text.Length > 0) && i < loopLimit; i++)
                 {
-                    int maxChars = (computedLineWidth < text.Length) ? computedLineWidth : text.Length;
+                    int maxChars = (lineWidth < text.Length) ? lineWidth : text.Length;
                     int count = text.LastIndexOf(' ', maxChars - 1);
                     if (keepLineBreaks == true)
                     {
@@ -198,12 +287,13 @@ namespace BaconfistSEInGameScript
                         count = (newLine != -1 && newLine < count) ? newLine : count;
                     }
                     count = (count == -1) ? maxChars : count;
-                    wrapped.AppendLine(" " + text.Substring(0, count).Trim(trimChars) + " ");
+                    wrapped.AppendLine(text.Substring(0, count).Trim(trimChars));
                     text = text.Remove(0, count).Trim(trimChars);
                 }
 
                 return wrapped.ToString();
             }
+            
         }
         // End InGame-Script
     }
