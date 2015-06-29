@@ -9,23 +9,21 @@ using Sandbox.ModAPI.Interfaces;
 using VRageMath;
 using VRage;
 
-
 namespace BaconfistSEInGameScript
 {
-    class SpaceEngineersInGameScriptTemplate
+    class AutoMiner_1
     {
         IMyGridTerminalSystem GridTerminalSystem;
         String Storage;
-		IMyProgrammableBlock Me;
-		Action<string> Echo;
-		TimeSpan ElapsedTime;
+        IMyProgrammableBlock Me;
+        Action<string> Echo;
+        TimeSpan ElapsedTime;
 
-// Begin InGame-Script
-		void Main(string argument)
-		{
-			
-		}
-// End InGame-Script
+        // Begin InGame-Script
+        void Main(string argument)
+        {
+
+        }
+        // End InGame-Script
     }
 }
-
