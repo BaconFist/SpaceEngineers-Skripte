@@ -55,6 +55,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controller\BlockActionProxy.cs" />
+    <Compile Include="Controller\BlockFilterAndControl.cs" />
     <Compile Include="Templates\MyGridProgramTemplate.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
