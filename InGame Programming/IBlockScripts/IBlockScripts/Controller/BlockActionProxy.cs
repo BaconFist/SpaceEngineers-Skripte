@@ -17,16 +17,17 @@ namespace IBlockScripts
         #region Game Code - Copy/Paste Code from this region into Block Script Window in Game
         /**
             BlockActionProxy
-            ======================
+            ==============================
             Copyright (c) 2015 Thomas Klose <thomas@bratler.net>
-
+            Source: https://github.com/BaconFist/SpaceEngineers-Skripte/blob/master/InGame%20Programming/IBlockScripts/IBlockScripts/Controller/BlockActionProxy.cs
+            
             Summary
-            -------
+            ------------------------------
             Call blockactions using Programmable block's argument.
             (no Timer required, script runs on request)
 
             Abstract
-            --------   
+            ------------------------------
             This script allows you to map multiple Actions to one Button or Sensor-Action.
             The script needs a Block's Name (a simple glob pattern) and the Action to apply as an argument.
             Pattern for the Argument is  BLOCKNAME:ACTION. You can repeat this Pattern seperaten with ";" (See Example). 
@@ -42,7 +43,7 @@ namespace IBlockScripts
             -  ? = 1 character
             
             Example
-            -------
+            ------------------------------
             "Door*Airlock 1:Open_Off;Air Vent 4 Airlock 1:Depressurize_Off" // close airlock doors an pressurise airlock
             "InteriorLight*:OnOff_On" // switch all Interior Lights On
             "*Light*Portside*:OnOff;Grinder 5:OnOff_On" // Switch state of  Portside Lights and enable Grinder 5
