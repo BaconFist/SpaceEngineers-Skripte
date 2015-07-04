@@ -41,6 +41,8 @@ namespace IBlockScripts
             Glob Pattern:
             -  * = 0 or many characters
             -  ? = 1 character
+
+            Update 1: Shows Debug info in Terminal.
             
             Example
             ------------------------------
@@ -53,23 +55,32 @@ namespace IBlockScripts
 
         string blockPattern = "";
         string action = "";
+        MyDebug Debug;
 
         void Main(string args)
         {
+            Debug = new MyDebug(this);
             string[] argList = args.Split(';');
-
+            Debug.write("Start Script: " + argList.Length.ToString() + " Commands in \"" + args + "\"");
             for (int i_argList = 0; i_argList < argList.Length; i_argList++)
             {
+                Debug.write("Try parse => " + argList[i_argList]);
                 if (parseArgument(argList[i_argList]))
                 {
+                    Debug.write("succeed to parse command.");
                     List<IMyTerminalBlock> matches = findBlocks();
+                    Debug.write("Found " + matches.Count.ToString() + " matching Blocks");
                     if (matches.Count > 0)
-                    {
+                    {                        
                         for (int i_match = 0; i_match < matches.Count; i_match++)
                         {
+                            Debug.write("Apply " + action + " to " + matches[i_match].CustomName);
                             matches[i_match].ApplyAction(action);
                         }
                     }
+                } else
+                {
+                    Debug.write("Failed to parse command.");
                 }
             }
         }
@@ -110,6 +121,23 @@ namespace IBlockScripts
             }
             #endregion
         }
+
+        #region copy from here
+        class MyDebug
+        {
+            MyGridProgram program;
+            public MyDebug(MyGridProgram program)
+            {
+                this.program = program;
+            }
+
+            public void write(string msg)
+            {
+                string arg = "[" + program.ElapsedTime.TotalMilliseconds.ToString() + "] " + msg;
+                program.Echo(arg);
+            }
+        }
+        #endregion copy to here
         #endregion
     }
 }
