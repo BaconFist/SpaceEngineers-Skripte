@@ -38,7 +38,7 @@ namespace IBlockScripts
         void Main(string args)
         {
             MyDebug Debug = new MyDebug(this);
-            Debug.write("Copy the MyDebug Clacc to your script.");
+            Debug.write("Copy the MyDebug Class to your script.");
         }
 
         #region copy from here
