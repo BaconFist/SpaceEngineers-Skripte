@@ -19,7 +19,7 @@ namespace IBlockScripts
            DeadmanSwitch
            ==============================
            Copyright (c) 2015 Thomas Klose <thomas@bratler.net>
-           Source:  
+           Source: http://git.io/vYcKE
            
            Summary
            ------------------------------
@@ -27,7 +27,7 @@ namespace IBlockScripts
 
            Abstract
            ------------------------------
-           
+            Used to Emergency stop a Ship. Helpfull when loosing connection to a Server and flying without dampeners.
            
            Example
            ------------------------------
