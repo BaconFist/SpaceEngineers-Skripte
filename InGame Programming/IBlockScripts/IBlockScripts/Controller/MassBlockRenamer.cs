@@ -19,7 +19,7 @@ namespace IBlockScripts
            MassBlockRenamer
            ==============================
            Copyright (c) 2015 Thomas Klose <thomas@bratler.net>
-           Source:  
+           Source:  http://git.io/vORsd
            
            Summary
            ------------------------------
