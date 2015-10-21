@@ -35,35 +35,37 @@ namespace IBlockScripts
        */
 
         const char CONFIG_PATH_SEPERATOR = '/';
-        StringBuilder exampleData = new StringBuilder();
+        
 
 
         void Main(string args)
         {
+            StringBuilder exampleData = new StringBuilder();
             exampleData.AppendLine("Storage/Cargo MB 1");
             exampleData.AppendLine("Storage/Cargo MB 2");
             exampleData.AppendLine("System/Power/Small Reactor 3");
 
-            MenuFactory MF = new MenuFactory(GridTerminalSystem);
-            Item MenuItem = MF.createFromConfig(exampleData.ToString());
+            DasMenuFactory MenuFactory = new DasMenuFactory(GridTerminalSystem);
+            DasMenuItem MenuItem = MenuFactory.createFromConfig(exampleData.ToString());
 
-            MenuView view = new MenuView();
+            DasMenuView view = new DasMenuView();
 
             Echo(view.getContent(MenuItem));
           
         }
 
-        class MenuView
+
+        class DasMenuView
         {
-            public string getContent(Item RootItem)
+            public string getContent(DasMenuItem RootItem)
             {
                 ItemRepository ItemRepository = new ItemRepository();
-                List<Item> Items = RootItem.getChilds(); 
+                List<DasMenuItem> Items = RootItem.getChilds(); 
 
                 StringBuilder content = new StringBuilder();
                 for (int i_Items = 0; i_Items < Items.Count; i_Items++)
                 {
-                    Item Item = Items[i_Items];
+                    DasMenuItem Item = Items[i_Items];
                     content.AppendLine((new string('-', ItemRepository.countParents(Item))) + " " + Item.getLabel() + (Item.hasParent()? " (" + Item.getParent().getLabel() + ")":""));
 
                     if (Item.hasChilds())
@@ -78,18 +80,18 @@ namespace IBlockScripts
 
         }
 
-        class MenuFactory
+        class DasMenuFactory
         {
             public IMyGridTerminalSystem GridTerminalSystem;
 
-            public MenuFactory(IMyGridTerminalSystem value)
+            public DasMenuFactory(IMyGridTerminalSystem value)
             {
                 GridTerminalSystem = value;
             }
 
-            public Item createFromConfig(string data)
+            public DasMenuItem createFromConfig(string data)
             {
-                RootItem RootItem = (new ItemFactory()).createRootItem();
+                DasMenuRootItem RootItem = (new DasItemFactory()).createRootItem();
                 parseConfig(data, RootItem);
 
                 return RootItem;
@@ -112,7 +114,7 @@ namespace IBlockScripts
                 return Segments;
             }
 
-            private void parseConfig(string data, RootItem RootItem)
+            private void parseConfig(string data, DasMenuRootItem RootItem)
             {
                 List<string> dataLines = getLines(data);
                 for(int i_dataLines = 0; i_dataLines < dataLines.Count; i_dataLines++)
@@ -122,10 +124,10 @@ namespace IBlockScripts
                 }
             }
 
-            private void parseLine(string data, RootItem RootItem)
+            private void parseLine(string data, DasMenuRootItem RootItem)
             {
                 List<string> dataSegments = new List<string>();
-                Item Parent = RootItem;
+                DasMenuItem Parent = RootItem;
                 dataSegments = getSegments(data);
                 for (int i_dataSegments = 0; i_dataSegments < dataSegments.Count; i_dataSegments++)
                 {
@@ -142,15 +144,15 @@ namespace IBlockScripts
                 }
             }
 
-            private PathItem parsePathItem(string data, Item Parent)
+            private DasMenuPathItem parsePathItem(string data, DasMenuItem Parent)
             {
-                PathItem PathItem = (new ItemFactory()).createPathItem(data);
+                DasMenuPathItem PathItem = (new DasItemFactory()).createPathItem(data);
                 Parent.addChild(PathItem);
 
                 return PathItem;
             }
 
-            private void parseBlockItems(string data, Item Parent)
+            private void parseBlockItems(string data, DasMenuItem Parent)
             {
                 List<IMyTerminalBlock> Blocks = getBlocksFromDataSegment(data);
                 for (int i_Blocks = 0; i_Blocks < Blocks.Count; i_Blocks++)
@@ -160,14 +162,14 @@ namespace IBlockScripts
                 }
             }
 
-            private void parseSingleBlockItem(IMyTerminalBlock Block, Item Parent)
+            private void parseSingleBlockItem(IMyTerminalBlock Block, DasMenuItem Parent)
             {
-                BlockItem BlockItem = (new ItemFactory()).createBlockItem(Block);
+                DasMenuBlockItem BlockItem = (new DasItemFactory()).createBlockItem(Block);
                 Parent.addChild(BlockItem);
                 parseActions(BlockItem);
             }
 
-            private void parseActions(BlockItem BlockItem)
+            private void parseActions(DasMenuBlockItem BlockItem)
             {
                 List<ITerminalAction> Actions = getActions(BlockItem.getBlock());
                 for(int i_Actions = 0; i_Actions < Actions.Count; i_Actions++)
@@ -177,9 +179,9 @@ namespace IBlockScripts
                 }                
             }
 
-            private void parseSingleAction(ITerminalAction Action, Item Parent)
+            private void parseSingleAction(ITerminalAction Action, DasMenuItem Parent)
             {
-                ActionItem ActionItem = (new ItemFactory()).createActionItem(Action);
+                DasMenuActionItem ActionItem = (new DasItemFactory()).createActionItem(Action);
                 Parent.addChild(ActionItem);
             }
 
@@ -205,35 +207,35 @@ namespace IBlockScripts
             }
         }
 
-        class ItemFactory
+        class DasItemFactory
         {
-            public ActionItem createActionItem(ITerminalAction Action)
+            public DasMenuActionItem createActionItem(ITerminalAction Action)
             {
-                ActionItem BuildItem = new ActionItem();
+                DasMenuActionItem BuildItem = new DasMenuActionItem();
                 BuildItem.setAction(Action);
 
                 return BuildItem;
             }
 
-            public BlockItem createBlockItem(IMyTerminalBlock Block)
+            public DasMenuBlockItem createBlockItem(IMyTerminalBlock Block)
             {
-                BlockItem BuildItem = new BlockItem();
+                DasMenuBlockItem BuildItem = new DasMenuBlockItem();
                 BuildItem.setBlock(Block);
 
                 return BuildItem;
             }
 
-            public PathItem createPathItem(string label)
+            public DasMenuPathItem createPathItem(string label)
             {
-                PathItem BuildItem = new PathItem();
+                DasMenuPathItem BuildItem = new DasMenuPathItem();
                 BuildItem.setLabel(label);
 
                 return BuildItem;
             }
 
-            public RootItem createRootItem()
+            public DasMenuRootItem createRootItem()
             {
-                RootItem BuildItem = new RootItem();
+                DasMenuRootItem BuildItem = new DasMenuRootItem();
                 return BuildItem;
             }
 
@@ -242,9 +244,9 @@ namespace IBlockScripts
         class ItemRepository
         {
 
-            public List<Item> findAllByLabel(string label, Item root)
+            public List<DasMenuItem> findAllByLabel(string label, DasMenuItem root)
             {
-                List<Item> Matches = new List<Item>();
+                List<DasMenuItem> Matches = new List<DasMenuItem>();
                 if (root.hasChilds())
                 {
                     Matches = root.getChilds().FindAll(x => x.getLabel().Equals(label));
@@ -258,7 +260,7 @@ namespace IBlockScripts
             }
 
  
-            public List<String> getPathFromItem(Item Item)
+            public List<String> getPathFromItem(DasMenuItem Item)
             {
                 List<String> BuildPath = new List<String>();
                 BuildPath.Add(Item.getLabel());
@@ -269,10 +271,10 @@ namespace IBlockScripts
                 return BuildPath;
             }
 
-            public int countParents(Item Item)
+            public int countParents(DasMenuItem Item)
             {
                 int count = 0;
-                if (Item.hasParent() && !(Item.getParent() is RootItem))
+                if (Item.hasParent() && !(Item.getParent() is DasMenuRootItem))
                 {
                     count++;
                     count += countParents(Item.getParent());
@@ -283,11 +285,11 @@ namespace IBlockScripts
             
         }
 
-        class Item
+        class DasMenuItem
         {
             private string label;
-            private Item Parent;
-            private List<Item> Childs = new List<Item>();
+            private DasMenuItem Parent;
+            private List<DasMenuItem> Childs = new List<DasMenuItem>();
                         
             public void setLabel(string value)
             {
@@ -299,12 +301,12 @@ namespace IBlockScripts
                 return label;
             }
 
-            public void setParent(Item value)
+            public void setParent(DasMenuItem value)
             {
                 Parent = value;
             }
 
-            public Item getParent()
+            public DasMenuItem getParent()
             {
                 return Parent;
             }
@@ -314,17 +316,17 @@ namespace IBlockScripts
                 return (this.getParent() != null);
             }
 
-            public void setChilds(List<Item> value)
+            public void setChilds(List<DasMenuItem> value)
             {
                 Childs = value;
             }
 
-            public List<Item> getChilds()
+            public List<DasMenuItem> getChilds()
             {
                 return Childs;
             }
 
-            public void addChild(Item value)
+            public void addChild(DasMenuItem value)
             {
                 if (!getChilds().Contains(value))
                 {
@@ -337,7 +339,7 @@ namespace IBlockScripts
                 }
             }
 
-            public void removeChild(Item value)
+            public void removeChild(DasMenuItem value)
             {
                 if (getChilds().Contains(value))
                 {
@@ -353,12 +355,12 @@ namespace IBlockScripts
               
         }
 
-        class PathItem : Item
+        class DasMenuPathItem : DasMenuItem
         {
 
         }
 
-        class BlockItem : Item
+        class DasMenuBlockItem : DasMenuItem
         {
             private IMyTerminalBlock Block;
 
@@ -374,7 +376,7 @@ namespace IBlockScripts
             }
         }
 
-        class ActionItem : BlockItem
+        class DasMenuActionItem : DasMenuBlockItem
         {
             private ITerminalAction Action;
             
@@ -390,7 +392,7 @@ namespace IBlockScripts
             }       
         }
 
-        class RootItem : Item
+        class DasMenuRootItem : DasMenuItem
         {
 
         }
