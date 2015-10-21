@@ -196,7 +196,6 @@ namespace IBlockScripts
 
             private StringBuilder getContentChilds(DasMenuItem RootItem, DasMenuConfig Config)
             {
-                DasMenuItemRepository ItemRepository = new DasMenuItemRepository();
                 List<DasMenuItem> Items = RootItem.getChilds();
 
                 StringBuilder content = new StringBuilder();
@@ -237,7 +236,7 @@ namespace IBlockScripts
             private string getIndent(DasMenuItem Item, DasMenuConfig Config)
             {
                 string indent = "";
-                int count = (new DasMenuItemRepository()).countParents(Item);
+                int count = Item.countParents();
                 for(int i = 0; i < count; i++)
                 {
                     indent += Config.getIndent();
@@ -365,7 +364,7 @@ namespace IBlockScripts
 
             private bool isLastOfCollection(System.Collections.ICollection Collection, int index)
             {
-                return (Collection.Count-1 == index);
+                return (Collection.Count - 1 == index);
             }
         }
 
@@ -401,50 +400,6 @@ namespace IBlockScripts
                 return BuildItem;
             }
 
-        }
-
-        class DasMenuItemRepository
-        {
-
-            public List<DasMenuItem> findAllByLabel(string label, DasMenuItem root)
-            {
-                List<DasMenuItem> Matches = new List<DasMenuItem>();
-                if (root.hasChilds())
-                {
-                    Matches = root.getChilds().FindAll(x => x.getLabel().Equals(label));
-                    for(int i_Childs = 0; i_Childs < root.getChilds().Count; i_Childs++)
-                    {
-                        Matches.AddRange(findAllByLabel(label, root.getChilds()[i_Childs]));
-                    }
-                }
-
-                return Matches;
-            }
-
- 
-            public List<String> getPathFromItem(DasMenuItem Item)
-            {
-                List<String> BuildPath = new List<String>();
-                BuildPath.Add(Item.getLabel());
-                if (Item.hasParent())
-                {
-                    BuildPath.AddRange(getPathFromItem(Item.getParent()));
-                }
-                return BuildPath;
-            }
-
-            public int countParents(DasMenuItem Item)
-            {
-                int count = 0;
-                if (Item.hasParent() && !(Item.getParent() is DasMenuRootItem))
-                {
-                    count++;
-                    count += countParents(Item.getParent());
-                }
-
-                return count;
-            }
-            
         }
 
         class DasMenuItem
@@ -514,7 +469,19 @@ namespace IBlockScripts
             {
                 return (getChilds().Count > 0);
             }
-              
+
+            public int countParents()
+            {
+                int count = 0;
+                if (this.hasParent() && !(this.getParent() is DasMenuRootItem))
+                {
+                    count++;
+                    count += this.getParent().countParents();
+                }
+
+                return count;
+            }
+
         }
 
         class DasMenuPathItem : DasMenuItem
