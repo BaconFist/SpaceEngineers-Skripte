@@ -196,7 +196,7 @@ namespace IBlockScripts
 
             private StringBuilder getContentChilds(DasMenuItem RootItem, DasMenuConfig Config)
             {
-                ItemRepository ItemRepository = new ItemRepository();
+                DasMenuItemRepository ItemRepository = new DasMenuItemRepository();
                 List<DasMenuItem> Items = RootItem.getChilds();
 
                 StringBuilder content = new StringBuilder();
@@ -237,7 +237,7 @@ namespace IBlockScripts
             private string getIndent(DasMenuItem Item, DasMenuConfig Config)
             {
                 string indent = "";
-                int count = (new ItemRepository()).countParents(Item);
+                int count = (new DasMenuItemRepository()).countParents(Item);
                 for(int i = 0; i < count; i++)
                 {
                     indent += Config.getIndent();
@@ -260,7 +260,7 @@ namespace IBlockScripts
 
             public DasMenuItem createFromConfig(DasMenuConfig Config)
             {
-                DasMenuRootItem RootItem = (new DasItemFactory()).createRootItem();
+                DasMenuRootItem RootItem = (new DasMenuItemFactory()).createRootItem();
 
 
                 parseConfig(Config, RootItem);
@@ -308,7 +308,7 @@ namespace IBlockScripts
 
             private DasMenuPathItem parsePathItem(string data, DasMenuItem Parent)
             {
-                DasMenuPathItem PathItem = (new DasItemFactory()).createPathItem(data);
+                DasMenuPathItem PathItem = (new DasMenuItemFactory()).createPathItem(data);
                 Parent.addChild(PathItem);
 
                 return PathItem;
@@ -326,7 +326,7 @@ namespace IBlockScripts
 
             private void parseSingleBlockItem(IMyTerminalBlock Block, DasMenuItem Parent)
             {
-                DasMenuBlockItem BlockItem = (new DasItemFactory()).createBlockItem(Block);
+                DasMenuBlockItem BlockItem = (new DasMenuItemFactory()).createBlockItem(Block);
                 Parent.addChild(BlockItem);
                 parseActions(BlockItem);
             }
@@ -343,7 +343,7 @@ namespace IBlockScripts
 
             private void parseSingleAction(ITerminalAction Action, DasMenuItem Parent)
             {
-                DasMenuActionItem ActionItem = (new DasItemFactory()).createActionItem(Action);
+                DasMenuActionItem ActionItem = (new DasMenuItemFactory()).createActionItem(Action);
                 Parent.addChild(ActionItem);
             }
 
@@ -369,7 +369,7 @@ namespace IBlockScripts
             }
         }
 
-        class DasItemFactory
+        class DasMenuItemFactory
         {
             public DasMenuActionItem createActionItem(ITerminalAction Action)
             {
@@ -403,7 +403,7 @@ namespace IBlockScripts
 
         }
 
-        class ItemRepository
+        class DasMenuItemRepository
         {
 
             public List<DasMenuItem> findAllByLabel(string label, DasMenuItem root)
