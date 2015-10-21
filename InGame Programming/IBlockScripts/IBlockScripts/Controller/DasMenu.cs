@@ -34,29 +34,72 @@ namespace IBlockScripts
 
        */
 
+        const char ARGS_SPLIT = ';';
+        const string ARGS_LCDNAME_FORMAT = "!DasMenu#{ID}!";
+
         const char CONFIG_PATH_SEPERATOR = '/';
         const string CONFIG_CMD_PREFIX = "#";
 
 
         void Main(string args)
         {
+            DasMenuArgs MenuArgs = new DasMenuArgs(args, ARGS_SPLIT);
+            IMyTextPanel LcdBlock = findLcd(MenuArgs.getLcdPattern());
+            if(LcdBlock != null)
+            {
+                Echo("Found TextPanel: " + LcdBlock.ToString());
+                DasMenuConfig Config = new DasMenuConfig(LcdBlock.GetPrivateText());
+                DasMenuFactory MenuFactory = new DasMenuFactory(GridTerminalSystem);
+                DasMenuItem MenuItem = MenuFactory.createFromConfig(Config);
 
-            StringBuilder exampleData = new StringBuilder();
-            exampleData.AppendLine("#Title=DasMenu Testdata");
-            exampleData.AppendLine("#Format={INDENT}{INDENTSPACE}<{LABEL}>");
-            exampleData.AppendLine("#Indent=+");
-            exampleData.AppendLine("Storage/Cargo MB 1");
-            exampleData.AppendLine("Storage/Cargo MB 2");
-            exampleData.AppendLine("System/Power/Small Reactor 3");
+                DasMenuView view = new DasMenuView();
 
-            DasMenuConfig Config = new DasMenuConfig(exampleData.ToString());
-            DasMenuFactory MenuFactory = new DasMenuFactory(GridTerminalSystem);
-            DasMenuItem MenuItem = MenuFactory.createFromConfig(Config);
+                string content = view.getContent(MenuItem, Config);
+                LcdBlock.WritePublicText(content);
+            } else
+            {
+                Echo("Can't resolve TextPanel with Pattern \"" + MenuArgs.getLcdPattern() + "\"");
+            }
 
-            DasMenuView view = new DasMenuView();
+        }
 
-            Echo(view.getContent(MenuItem, Config));
-          
+        public IMyTextPanel findLcd(string id)
+        {
+            string pattern = ARGS_LCDNAME_FORMAT.Replace("{ID}", id);
+            IMyTextPanel LcdBlock = null;
+            List<IMyTerminalBlock> Blocks = new List<IMyTerminalBlock>();
+            GridTerminalSystem.GetBlocksOfType<IMyTextPanel>(Blocks, (x => (x as IMyTerminalBlock).CustomName.Contains(pattern)));
+            if (Blocks.Count > 0)
+            {
+                 LcdBlock = Blocks[0] as IMyTextPanel;
+            }
+
+            return LcdBlock;
+        }
+
+        class DasMenuArgs
+        {
+            private string LcdPattern;
+            private string Command;
+
+            public DasMenuArgs(string args, char splitchar)
+            {
+                string[] argv = args.Split(splitchar);
+                if(argv.Length > 0)
+                {
+                    setLcdPattern(argv[0]);
+                }
+            }
+            
+            public void setLcdPattern(string value)
+            {
+                LcdPattern = value;
+            }
+
+            public string getLcdPattern()
+            {
+                return LcdPattern;
+            }
         }
 
         class DasMenuConfig
@@ -404,18 +447,36 @@ namespace IBlockScripts
 
         class DasMenuItem
         {
-            private string label;
+            private string Label;
             private DasMenuItem Parent;
             private List<DasMenuItem> Childs = new List<DasMenuItem>();
                         
+
+            public virtual string getUid()
+            {
+                return this.getBreadCrumbs("" + CONFIG_PATH_SEPERATOR);
+            }
+
+            public virtual string getBreadCrumbs(string seperator)
+            {
+                string BreadCrumbs = "/";
+                BreadCrumbs += getLabel();
+                if (hasParent())
+                {
+                    BreadCrumbs = getParent().getBreadCrumbs(seperator) + BreadCrumbs;
+                }
+
+                return BreadCrumbs;
+            }
+
             public void setLabel(string value)
             {
-                label = value;
+                Label = value;
             }
 
             public string getLabel()
             {
-                return label;
+                return Label;
             }
 
             public void setParent(DasMenuItem value)
@@ -482,6 +543,17 @@ namespace IBlockScripts
                 return count;
             }
 
+            public List<DasMenuItem> getParents()
+            {
+                List<DasMenuItem> Parents = new List<DasMenuItem>();
+                if (this.hasParent())
+                {
+                    Parents.Add(this.getParent());
+                    Parents.AddRange(this.getParent().getParents());
+                }
+
+                return Parents;
+            }
         }
 
         class DasMenuPathItem : DasMenuItem
@@ -503,6 +575,11 @@ namespace IBlockScripts
             {
                 return Block;
             }
+
+            public override string getUid()
+            {
+                return getBlock().ToString();
+            }
         }
 
         class DasMenuActionItem : DasMenuBlockItem
@@ -518,12 +595,26 @@ namespace IBlockScripts
             public ITerminalAction getAction()
             {
                 return Action;
-            }       
+            }     
+            
+            public override string getUid()
+            {
+                string uid = getAction().Id;
+                if(hasParent() && getParent() is DasMenuBlockItem)
+                {
+                    uid = (getParent() as DasMenuBlockItem).getUid() + "_" + uid;
+                }
+
+                return uid;
+            }  
         }
 
         class DasMenuRootItem : DasMenuItem
         {
-
+            public override string getBreadCrumbs(string seperator)
+            {
+                return "";
+            }
         }
                 
         #endregion
