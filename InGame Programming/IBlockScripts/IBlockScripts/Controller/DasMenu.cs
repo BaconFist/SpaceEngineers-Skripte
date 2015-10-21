@@ -35,46 +35,215 @@ namespace IBlockScripts
        */
 
         const char CONFIG_PATH_SEPERATOR = '/';
-        
+        const string CONFIG_CMD_PREFIX = "#";
 
 
         void Main(string args)
         {
+
             StringBuilder exampleData = new StringBuilder();
+            exampleData.AppendLine("#Title=DasMenu Testdata");
+            exampleData.AppendLine("#Format={INDENT}{INDENTSPACE}<{LABEL}>");
+            exampleData.AppendLine("#Indent=+");
             exampleData.AppendLine("Storage/Cargo MB 1");
             exampleData.AppendLine("Storage/Cargo MB 2");
             exampleData.AppendLine("System/Power/Small Reactor 3");
 
+            DasMenuConfig Config = new DasMenuConfig(exampleData.ToString());
             DasMenuFactory MenuFactory = new DasMenuFactory(GridTerminalSystem);
-            DasMenuItem MenuItem = MenuFactory.createFromConfig(exampleData.ToString());
+            DasMenuItem MenuItem = MenuFactory.createFromConfig(Config);
 
             DasMenuView view = new DasMenuView();
 
-            Echo(view.getContent(MenuItem));
+            Echo(view.getContent(MenuItem, Config));
           
+        }
+
+        class DasMenuConfig
+        {
+            private List<string> MenuItems = new List<string>();
+            private string Title;
+            private string Selector = "> ";
+            private string Indent = "-";
+            private string Format = "{INDENT}{INDENTSPACE}{LABEL}";
+
+            const string CMD_TITLE = "Title";
+            const string CMD_SELECTOR = "Selector";
+            const string CMD_INDENT = "Indent";
+            const string CMD_FORMAT = "Format";
+
+            public const string FORMAT_INDENT = "{INDENT}";
+            public const string FORMAT_INDENTSPACE = "{INDENTSPACE}";
+            public const string FORMAT_LABEL = "{LABEL}";
+
+            public DasMenuConfig(string configData)
+            {
+                parseConfig(configData);
+            }
+
+            public List<string> getMenuItems()
+            {
+                return MenuItems;
+            }
+
+            public void setTitle(string value)
+            {
+                Title = value;
+            }
+
+            public string getTitle()
+            {
+                return Title;
+            }
+
+            public void setSelector(string value)
+            {
+                Selector = value;
+            }
+
+            public string getSelector()
+            {
+                return Selector;
+            }
+
+            public void setIndent(string value)
+            {
+                Indent = value;
+            }
+
+            public string getIndent()
+            {
+                return Indent;
+            }
+
+            public void setFormat(string value)
+            {
+                Format = value;
+            }
+
+            public string getFormat()
+            {
+                return Format;
+            }
+
+            private void parseConfig(string data)
+            {
+                string[] Lines = data.Split(new string[] { "\r\n", "\n\r", "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
+                for(int i = 0; i < Lines.Length; i++)
+                {
+                    string Line = Lines[i];
+                    if (hasCommand(Line))
+                    {
+                       if(isCommand(Line, CMD_TITLE))
+                        {
+                            setTitle(getValue(Line));
+                        } else if (isCommand(Line, CMD_INDENT))
+                        {
+                            setIndent(getValue(Line));
+                        } else if (isCommand(Line, CMD_SELECTOR))
+                        {
+                            setSelector(getValue(Line));
+                        }
+                        else if (isCommand(Line, CMD_FORMAT))
+                        {
+                            setFormat(getValue(Line));
+                        }
+
+                    } else
+                    {
+                        MenuItems.Add(Line);
+                    }
+                }                                                
+            }
+
+            private bool hasCommand(string data)
+            {
+                return data.StartsWith(CONFIG_CMD_PREFIX);
+            }          
+
+            private bool isCommand(string data, string command)
+            {
+                string lineStart = CONFIG_CMD_PREFIX + command + '=';
+                return (data.StartsWith(lineStart));
+            }             
+
+            private string getValue(string data, string defaultValue = "")
+            {
+                string value = defaultValue; 
+                if (data.Contains("="))
+                {
+                    value = data.Remove(0, data.IndexOf('=') + 1);
+                }
+
+                return value;
+            }
         }
 
 
         class DasMenuView
         {
-            public string getContent(DasMenuItem RootItem)
+            public string getContent(DasMenuItem RootItem, DasMenuConfig Config)
+            {
+                StringBuilder content = new StringBuilder();
+                if (Config.getTitle().Length > 0)
+                {
+                    content.AppendLine(Config.getTitle());
+                }
+                content.Append(getContentChilds(RootItem, Config));
+
+                return content.ToString();
+            }
+
+            private StringBuilder getContentChilds(DasMenuItem RootItem, DasMenuConfig Config)
             {
                 ItemRepository ItemRepository = new ItemRepository();
-                List<DasMenuItem> Items = RootItem.getChilds(); 
+                List<DasMenuItem> Items = RootItem.getChilds();
 
                 StringBuilder content = new StringBuilder();
+
+
                 for (int i_Items = 0; i_Items < Items.Count; i_Items++)
                 {
                     DasMenuItem Item = Items[i_Items];
-                    content.AppendLine((new string('-', ItemRepository.countParents(Item))) + " " + Item.getLabel() + (Item.hasParent()? " (" + Item.getParent().getLabel() + ")":""));
+                    content.AppendLine(renderLine(Item, Config));
 
                     if (Item.hasChilds())
                     {
-                        content.Append(getContent(Item));
+                        content.Append(getContentChilds(Item, Config).ToString());
                     }
                 }
 
-                return content.ToString();
+                return content;
+            }
+
+            private string renderLine(DasMenuItem Item, DasMenuConfig Config)
+            {
+                string content = Config.getFormat();
+                string indent = getIndent(Item, Config);
+
+                content = content.Replace(DasMenuConfig.FORMAT_INDENT, indent);
+                if(indent.Length > 0)
+                {
+                    content = content.Replace(DasMenuConfig.FORMAT_INDENTSPACE, " ");
+                } else
+                {
+                    content = content.Replace(DasMenuConfig.FORMAT_INDENTSPACE, "");
+                }
+                content = content.Replace(DasMenuConfig.FORMAT_LABEL, Item.getLabel());
+
+                return content;
+            }
+
+            private string getIndent(DasMenuItem Item, DasMenuConfig Config)
+            {
+                string indent = "";
+                int count = (new ItemRepository()).countParents(Item);
+                for(int i = 0; i < count; i++)
+                {
+                    indent += Config.getIndent();
+                }
+
+                return indent;
             }
 
 
@@ -89,21 +258,14 @@ namespace IBlockScripts
                 GridTerminalSystem = value;
             }
 
-            public DasMenuItem createFromConfig(string data)
+            public DasMenuItem createFromConfig(DasMenuConfig Config)
             {
                 DasMenuRootItem RootItem = (new DasItemFactory()).createRootItem();
-                parseConfig(data, RootItem);
+
+
+                parseConfig(Config, RootItem);
 
                 return RootItem;
-            }
-
-            private List<string> getLines(string data)
-            {
-                List<string> Lines = new List<string>();
-                string[] rawLines = data.Split(new string[] { "\r\n", "\n\r", "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
-                Lines.AddRange(rawLines);
-
-                return Lines;
             }
 
             private List<string> getSegments(string data)
@@ -114,9 +276,9 @@ namespace IBlockScripts
                 return Segments;
             }
 
-            private void parseConfig(string data, DasMenuRootItem RootItem)
+            private void parseConfig(DasMenuConfig Config, DasMenuRootItem RootItem)
             {
-                List<string> dataLines = getLines(data);
+                List<string> dataLines = Config.getMenuItems();
                 for(int i_dataLines = 0; i_dataLines < dataLines.Count; i_dataLines++)
                 {
                     string dataLine = dataLines[i_dataLines];
