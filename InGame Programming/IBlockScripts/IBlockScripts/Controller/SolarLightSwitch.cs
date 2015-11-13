@@ -19,7 +19,7 @@ namespace IBlockScripts
            SolarLightDimmer
            ==============================
            Copyright (c) 2015 Thomas Klose <thomas@bratler.net>
-           Source:  
+           Source:  https://github.com/BaconFist/SpaceEngineers-Skripte/blob/master/InGame%20Programming/IBlockScripts/IBlockScripts/Controller/SolarLightSwitch.cs
            
            Summary
            ------------------------------
@@ -73,8 +73,6 @@ namespace IBlockScripts
             GridTerminalSystem.GetBlocksOfType<IMyLightingBlock>(Lights, (x => x.CustomName.Contains(key)));
 
             double AveragePower = getAverageSolarPanelPowerWatt(SolarPanels);
-            Echo(AveragePower.ToString());
-            Echo(AveragePowerMin.ToString());
 
             string Action = "OnOff_Off";
             if(AveragePower < AveragePowerMin)
@@ -96,7 +94,6 @@ namespace IBlockScripts
             {
                 double cur = getSolarpanelPowerWatt(SolarPanelList[i] as IMySolarPanel);
                 PowerSum += cur;
-                Echo(cur.ToString() + " / " + PowerSum.ToString());
             }
 
             return PowerSum / SolarPanelList.Count;
