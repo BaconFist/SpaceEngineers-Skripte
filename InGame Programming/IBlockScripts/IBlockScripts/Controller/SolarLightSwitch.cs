@@ -25,6 +25,8 @@ namespace IBlockScripts
            ------------------------------
            Swithcing Lights By Solarpanel Powerlevel
 
+            Quicksstart Setup: add "!SOL_SW!" to the Lights you want to switch an call the Programmable Block without arguments.
+
            Abstract
            ------------------------------
             Script uses solarpanels to determine day or night an toggles lights
