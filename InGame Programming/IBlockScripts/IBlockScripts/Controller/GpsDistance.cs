@@ -19,18 +19,29 @@ namespace IBlockScripts
            GpsDistance
            ==============================
            Copyright (c) 2015 Thomas Klose <thomas@bratler.net>
-           Source:  
+           Source:  https://github.com/BaconFist/SpaceEngineers-Skripte/blob/master/InGame%20Programming/IBlockScripts/IBlockScripts/Controller/GpsDistance.cs
            
            Summary
            ------------------------------
-           
+            Displays distance to GPS Coordinates on LCD
+
 
            Abstract
            ------------------------------
-          
-           
-           Example
-           ------------------------------
+            This script will display the distances to a one or more GPS Coordinate on a LCD-Panel.
+
+            Setup:
+            1. You need 1x Programable Block and 1x LCD-Panel
+            2. Add !GPS_DISTANCE!" to LCD-Panel's Name
+            3. Add GPS Coordinates to LCD-Panel's PrivateText (One per Line)(Copy Paste from GPS-TAB)
+            4. Change LCD-Panel's PublicTitle to whatever you want to display as heading on LCD. (leave blank for hiding heading)
+            5. Set LCD-Panel to Show PublicText
+            6. Load Script to Programmable Block and run.
+
+            Tweaks:
+            - To refresh distances run Script with a timer
+            - to change the !GPS_DISTANCE!-Tag to something else just pass a tag as argument
+
           
        */
         private string TAG = "!GPS_DISTANCE!";
