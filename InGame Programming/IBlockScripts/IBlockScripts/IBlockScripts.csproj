@@ -62,9 +62,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controller\DasMenu.cs" />
+    <Compile Include="Controller\GpsDistance.cs" />
     <Compile Include="Controller\MassBlockRenamer.cs" />
     <Compile Include="Controller\DeadmanSwitch.cs" />
     <Compile Include="Controller\BlockActionProxy.cs" />
+    <Compile Include="Controller\SolarLightSwitch.cs" />
     <Compile Include="Templates\MyGridProgramTemplate.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
