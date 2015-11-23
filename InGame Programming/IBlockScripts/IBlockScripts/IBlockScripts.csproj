@@ -63,6 +63,8 @@
   <ItemGroup>
     <Compile Include="Controller\DasMenu.cs" />
     <Compile Include="Controller\GpsDistance.cs" />
+    <Compile Include="Controller\GridBatteryControl.cs" />
+    <Compile Include="Controller\LcdPanelCycle.cs" />
     <Compile Include="Controller\MassBlockRenamer.cs" />
     <Compile Include="Controller\DeadmanSwitch.cs" />
     <Compile Include="Controller\BlockActionProxy.cs" />
