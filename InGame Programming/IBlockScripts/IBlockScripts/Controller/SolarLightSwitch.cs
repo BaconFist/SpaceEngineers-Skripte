@@ -71,8 +71,8 @@ namespace IBlockScripts
 
             List<IMyTerminalBlock> SolarPanels = new List<IMyTerminalBlock>();
             List<IMyTerminalBlock> Lights = new List<IMyTerminalBlock>();
-            GridTerminalSystem.GetBlocksOfType<IMySolarPanel>(SolarPanels);
-            GridTerminalSystem.GetBlocksOfType<IMyLightingBlock>(Lights, (x => x.CustomName.Contains(key)));
+            GridTerminalSystem.GetBlocksOfType<IMySolarPanel>(SolarPanels, (x => x.CubeGrid.Equals(Me.CubeGrid)));
+            GridTerminalSystem.GetBlocksOfType<IMyLightingBlock>(Lights, (x => x.CustomName.Contains(key) && x.CubeGrid.Equals(Me.CubeGrid)));
 
             double AveragePower = getAverageSolarPanelPowerWatt(SolarPanels);
 
