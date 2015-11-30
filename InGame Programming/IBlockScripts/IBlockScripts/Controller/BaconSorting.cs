@@ -19,7 +19,7 @@ namespace IBlockScripts
            BaconSorting
            ==============================
            Copyright (c) 2015 Thomas Klose <thomas@bratler.net>
-           Source:  
+           Source: https://github.com/BaconFist/SpaceEngineers-Skripte/blob/master/InGame%20Programming/IBlockScripts/IBlockScripts/Controller/BaconSorting.cs
            
            Summary
            ------------------------------
