@@ -18,7 +18,7 @@ namespace IBlockScripts
            StargateModDHDAdressChanger
            ==============================
            Copyright (c) 2016 Thomas Klose <thomas@bratler.net>
-           Source:  
+           Source:  https://github.com/BaconFist/SpaceEngineers-Skripte/blob/master/InGame%20Programming/IBlockScripts/IBlockScripts/Controller/StargateModDHDAdressChanger.cs
            
            Summary
            ------------------------------
