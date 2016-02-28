@@ -45,6 +45,10 @@ namespace IBlockScripts
           
        */
         private string TAG = "!GPS_DISTANCE!";
+        //---- DEBUG OPTIONS BEGIN --------
+        private const int DBG_INFO = 0;
+        //---- DEBUG OPTIONS END ----------
+        private const string GPS_PARSE_PATTERN = @"GPS:(?<name>[^:]+):(?<x>[^:]+):(?<y>[^:]+):(?<z>[^:]+):";
 
         private Vector3D PbPos;
 
@@ -61,36 +65,101 @@ namespace IBlockScripts
             GridTerminalSystem.GetBlocksOfType<IMyTextPanel>(blocks, (x => (x as IMyTerminalBlock).CustomName.Contains(TAG)));
             for(int i = 0; i < blocks.Count; i++)
             {
-                displayDistance(blocks[i] as IMyTextPanel);
-            }
-
-            
-
+                updatePanel(blocks[i] as IMyTextPanel);
+            }            
         }
 
-        private void displayDistance(IMyTextPanel lcd)
+        private bool updatePanel(IMyTextPanel TextPanel)
         {
-            StringBuilder sb = new StringBuilder();
-            if(lcd.GetPublicTitle().Length > 0)
+            List<BfGps> Waypoints = getGpsWaypoints(TextPanel);
+            StringBuilder Text = new StringBuilder();
+            if(TextPanel.GetPublicTitle().Trim().Length > 0)
             {
-                sb.AppendLine(lcd.GetPublicTitle());
+                Text.AppendLine(TextPanel.GetPublicTitle());
             }
-            string[] gpslist = lcd.GetPrivateText().Split(new string[] { "\r\n", "\n\r", "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
-            for(int i = 0; i < gpslist.Length; i++)
+            for(int i = 0; i < Waypoints.Count; i++)
             {
-                string args = gpslist[i];
-                BfGps GPS = getGPSVectorFromArg(args);
-                if (GPS != null)
+                BfGps Gps = Waypoints[i];
+                if(Gps != null)
                 {
-                    double distance = Math.Round(Vector3D.Distance(PbPos, GPS.vector), 2);
-                    sb.AppendLine(GPS.name + ": " + distance.ToString("### ### ### ###.00") + " m");
-                    
+                    double distance = Math.Round(Vector3D.Distance(PbPos, Gps.vector), 2);
+                    Text.AppendLine(Gps.name + ": " + distance.ToString("### ### ### ###.00") + " m");
                 }
             }
-            lcd.WritePublicText(sb.ToString());
+
+            return (displayOnPrivateText(TextPanel, Text) || displayOnPublicText(TextPanel, Text));
         }
 
-        
+        private bool displayOnPrivateText(IMyTextPanel TextPanel, StringBuilder Text)
+        {
+            string toPrivateTag = TAG.ToLower() + ">private";
+            if (TextPanel.CustomName.ToLower().Contains(toPrivateTag))
+            {
+                return TextPanel.WritePrivateText(Text.ToString());
+            }
+
+            return false;
+        }
+
+        private bool displayOnPublicText(IMyTextPanel TextPanel, StringBuilder Text)
+        {
+            return TextPanel.WritePublicText(Text.ToString());
+        }
+
+        private List<BfGps> getGpsWaypoints(IMyTextPanel TextPanel)
+        {
+            Dictionary<string, BfGps> Waypoints = new Dictionary<string, BfGps>();
+            List<IMyTextPanel> Panels = getPipeFromTextPanel(TextPanel);
+            Panels.Add(TextPanel);
+            for(int i = 0; i < Panels.Count; i++)
+            {
+                IMyTextPanel TempPanel = Panels[i];
+                Waypoints = addWaypointsToDict(TempPanel.CustomName, Waypoints);
+                Waypoints = addWaypointsToDict(TempPanel.GetPublicText(), Waypoints);
+                Waypoints = addWaypointsToDict(TempPanel.GetPrivateTitle(), Waypoints);
+                Waypoints = addWaypointsToDict(TempPanel.GetPrivateText(), Waypoints);
+            }
+            List<BfGps> GpsPoints = new List<BfGps>();
+            foreach (KeyValuePair<string,BfGps> item in Waypoints)
+            {
+                GpsPoints.Add(item.Value);
+            }
+
+            return GpsPoints;
+        }
+
+        private List<IMyTextPanel> getPipeFromTextPanel(IMyTextPanel TextPanel)
+        {
+            string pipeTag = ">" + TAG.ToLower();
+            pipeTag = System.Text.RegularExpressions.Regex.Escape(pipeTag);
+            string pattern = @"\S+" + pipeTag;
+            System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex(pattern, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            System.Text.RegularExpressions.MatchCollection Matches = regex.Matches(TextPanel.CustomName);
+            List<IMyTerminalBlock> Blocks = new List<IMyTerminalBlock>();
+            for(int i = 0; i < Matches.Count; i++)
+            {
+                string srcTag = Matches[i].Value.Replace(pipeTag, "");
+                GridTerminalSystem.GetBlocksOfType<IMyTerminalBlock>(Blocks, (x => x.CustomName.Contains(srcTag)));
+            }
+
+            return Blocks.ConvertAll<IMyTextPanel>(x => x as IMyTextPanel);
+        }
+
+        private Dictionary<string, BfGps> addWaypointsToDict(string data, Dictionary<string, BfGps> Waypoints)
+        {
+            System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex(GPS_PARSE_PATTERN);
+            System.Text.RegularExpressions.MatchCollection matches = regex.Matches(data);
+            for(int i = 0; i < matches.Count; i++)
+            {
+                BfGps gps = getGPSVectorFromArg(matches[i].Value);
+                if (!Waypoints.ContainsKey(gps.name))
+                {
+                    Waypoints.Add(gps.name, gps);
+                }
+            }
+
+            return Waypoints;
+        }
 
         private BfGps getGPSVectorFromArg(string arg)
         {
@@ -105,9 +174,7 @@ namespace IBlockScripts
             } 
 
             return null;
-        }
-
-        
+        }       
 
         public double parseDouble(string num)
         {

@@ -36,6 +36,11 @@ namespace IBlockScripts
 
         const char ARGS_SPLIT = ';';
         const string ARGS_LCDNAME_FORMAT = "!DasMenu#{ID}!";
+        const string CMD_PREV = "prev";
+        const string CMD_NEXT = "next";
+        const string CMD_ESC = "esc";
+        const string CMD_ENTER = "enter";
+        const string AVAILABLE_COMMANDS = CMD_PREV + CMD_NEXT + CMD_ESC + CMD_ENTER;
 
         const char CONFIG_PATH_SEPERATOR = '/';
         const string CONFIG_CMD_PREFIX = "#";
@@ -43,38 +48,215 @@ namespace IBlockScripts
 
         void Main(string args)
         {
+            run(args);
+        }
+
+        private void run(string args)
+        {
             DasMenuArgs MenuArgs = new DasMenuArgs(args, ARGS_SPLIT);
-            IMyTextPanel LcdBlock = findLcd(MenuArgs.getLcdPattern());
-            if(LcdBlock != null)
+            DasMenuTextPanelRepository TextPanelRepository = new DasMenuTextPanelRepository(GridTerminalSystem);
+            DasMenuFactory MenuFactory = new DasMenuFactory(GridTerminalSystem);
+            IMyTextPanel TextPanel = TextPanelRepository.findLcd(MenuArgs.getLcdPattern());
+            if(TextPanel != null)
             {
-                Echo("Found TextPanel: " + LcdBlock.ToString());
-                DasMenuConfig Config = new DasMenuConfig(LcdBlock.GetPrivateText());
-                DasMenuFactory MenuFactory = new DasMenuFactory(GridTerminalSystem);
-                DasMenuItem MenuItem = MenuFactory.createFromConfig(Config);
+                string SelectedItemUid = TextPanelRepository.readStateFromTextPanel(TextPanel);
+                DasMenuConfig MenuConfig = new DasMenuConfig(TextPanel.GetPrivateText());
+                DasMenuItem RootItem = MenuFactory.createFromConfig(MenuConfig);
+                DasMenuView View = new DasMenuView();
+                DasMenuItem CurrentItem = getCurrentItem(MenuArgs, RootItem, SelectedItemUid);
+                string content = View.getContent(RootItem, MenuConfig, CurrentItem);
 
-                DasMenuView view = new DasMenuView();
+                TextPanel.WritePublicText(content);
+                Echo(content);
+                TextPanelRepository.saveStateToTextPanel(TextPanel, CurrentItem.getUid());
+            }
+        }
 
-                string content = view.getContent(MenuItem, Config);
-                LcdBlock.WritePublicText(content);
-            } else
+        private DasMenuItem getCurrentItem(DasMenuArgs Args, DasMenuItem RootItem, string selected)
+        {
+            DasMenuCommand Cmd = new DasMenuCommand();
+            DasMenuItem Item;
+            Item = Cmd.runCommand(Args.getCommand(), RootItem, selected);
+
+            return Item;
+        }
+
+        class DasMenuCommand
+        {
+            public DasMenuItem runCommand(string cmd, DasMenuItem MenuItem, string args)
             {
-                Echo("Can't resolve TextPanel with Pattern \"" + MenuArgs.getLcdPattern() + "\"");
+                DasMenuItem Result = MenuItem;
+                switch (cmd)
+                {
+                    case CMD_ENTER:
+                        Result = getReturn(MenuItem, args);
+                        break;
+                    case CMD_ESC:
+                        Result = getEsc(MenuItem, args);
+                        break;
+                    case CMD_NEXT:
+                        Result = getCycle(MenuItem, args, 1);
+                        break;
+                    case CMD_PREV:
+                        Result = getCycle(MenuItem, args, -1);
+                        break;
+                    default:
+                        break;
+                        
+                }
+                return Result;
+            }
+
+            private void ApplyAction(DasMenuActionItem ActionItem)
+            {
+                if (ActionItem.hasParent() && ActionItem.getParent() is DasMenuBlockItem)
+                {
+                    DasMenuBlockItem BlockItem = ActionItem.getParent() as DasMenuBlockItem;
+                    ActionItem.getAction().Apply(BlockItem.getBlock());
+                }
+            }
+
+            public DasMenuItem getReturn(DasMenuItem RootItem, string currentSelection)
+            {
+                DasMenuItemRepository ItemRepository = new DasMenuItemRepository();
+                DasMenuItem CurrentItem = ItemRepository.getItemOrDefault(ItemRepository.findOneByUid(RootItem, currentSelection), RootItem);
+                if (CurrentItem.hasChilds())
+                {
+                    CurrentItem = CurrentItem.getChilds()[0];
+                } else if (CurrentItem is DasMenuActionItem)
+                {
+                    ApplyAction(CurrentItem as DasMenuActionItem);
+                }
+
+                return CurrentItem;
+            }
+
+            public DasMenuItem getEsc(DasMenuItem RootItem, string currentSelection)
+            {
+                DasMenuItemRepository ItemRepository = new DasMenuItemRepository();
+                DasMenuItem CurrentItem = ItemRepository.getItemOrDefault(ItemRepository.findOneByUid(RootItem, currentSelection), RootItem);
+                if (CurrentItem.hasParent())
+                {
+                    CurrentItem = CurrentItem.getParent();
+                }
+
+                return CurrentItem;
+            }
+
+            public DasMenuItem getCycle(DasMenuItem RootItem, string currentSelection, int steps)
+            {
+                DasMenuItemRepository ItemRepository = new DasMenuItemRepository();
+                DasMenuItem CurrentItem = ItemRepository.getItemOrDefault(ItemRepository.findOneByUid(RootItem, currentSelection), RootItem);
+                if (CurrentItem.hasParent())
+                {
+                    int maxIndex = CurrentItem.getParent().getChilds().Count - 1;
+                    int currentIndex = ItemRepository.getIndex(CurrentItem);
+                    int newIndex = currentIndex + steps;
+                    if (newIndex < 0)
+                    {
+                        newIndex = maxIndex;
+                    }
+                    if (newIndex > maxIndex)
+                    {
+                        newIndex = 0;
+                    }
+                    CurrentItem = CurrentItem.getParent().getChilds()[newIndex];
+                }
+
+                return CurrentItem;
+            }
+
+            
+        }
+
+        class DasMenuItemRepository
+        {
+            public int getIndex(DasMenuItem Item)
+            {
+                int index = 0;
+                if (Item.hasParent())
+                {
+                    index = Item.getParent().getChilds().IndexOf(Item);
+                }
+
+                return index;
+            }
+
+            public DasMenuItem findOneByUid(DasMenuItem HaystackItem, string uid)
+            {
+                DasMenuItem Item = null;
+                if (HaystackItem.getUid().Equals(uid))
+                {
+                    Item = HaystackItem;
+                } else if (HaystackItem.hasChilds())
+                {
+                    for(int i = 0;i < HaystackItem.getChilds().Count; i++)
+                    {
+                        Item = findOneByUid(HaystackItem.getChilds()[i], uid);
+                        if(Item != null)
+                        {
+                            break;
+                        }
+                    }
+                }
+                
+                return Item;
+            }
+
+            public DasMenuItem getItemOrDefault(DasMenuItem Item, DasMenuItem RootItem)
+            {
+                DasMenuItem Result = Item;
+
+                if(Result == null)
+                {
+                    if (RootItem.hasChilds())
+                    {
+                        Result = RootItem.getChilds()[0];
+                    }
+                }
+
+                return Result;
             }
 
         }
 
-        public IMyTextPanel findLcd(string id)
+        class DasMenuTextPanelRepository
         {
-            string pattern = ARGS_LCDNAME_FORMAT.Replace("{ID}", id);
-            IMyTextPanel LcdBlock = null;
-            List<IMyTerminalBlock> Blocks = new List<IMyTerminalBlock>();
-            GridTerminalSystem.GetBlocksOfType<IMyTextPanel>(Blocks, (x => (x as IMyTerminalBlock).CustomName.Contains(pattern)));
-            if (Blocks.Count > 0)
+            private IMyGridTerminalSystem GridTerminalSystem;
+            public DasMenuTextPanelRepository(IMyGridTerminalSystem value)
             {
-                 LcdBlock = Blocks[0] as IMyTextPanel;
+                GridTerminalSystem = value;
+            }
+            
+            public IMyTextPanel findLcd(string id)
+            {
+                string pattern = ARGS_LCDNAME_FORMAT.Replace("{ID}", id);
+                IMyTextPanel LcdBlock = null;
+                List<IMyTerminalBlock> Blocks = new List<IMyTerminalBlock>();
+                GridTerminalSystem.GetBlocksOfType<IMyTextPanel>(Blocks, (x => (x as IMyTerminalBlock).CustomName.Contains(pattern)));
+                if (Blocks.Count > 0)
+                {
+                    LcdBlock = Blocks[0] as IMyTextPanel;
+                }
+
+                return LcdBlock;
             }
 
-            return LcdBlock;
+            public void saveStateToTextPanel(IMyTextPanel TextPanel, string uid)
+            {
+                TextPanel.WritePrivateTitle(uid);
+            }
+
+            public string readStateFromTextPanel(IMyTextPanel TextPanel)
+            {
+                string uid = TextPanel.GetPrivateTitle();
+                if (uid.Length == 0)
+                {
+                    uid = null;
+                }
+
+                return uid;
+            }
         }
 
         class DasMenuArgs
@@ -89,8 +271,17 @@ namespace IBlockScripts
                 {
                     setLcdPattern(argv[0]);
                 }
+                if (argv.Length > 1 && isCommand(argv[1]))
+                {
+                    setCommand(argv[1]);
+                }
             }
-            
+
+            private bool isCommand(string command)
+            {
+                return AVAILABLE_COMMANDS.Contains(command);
+            }
+
             public void setLcdPattern(string value)
             {
                 LcdPattern = value;
@@ -100,6 +291,18 @@ namespace IBlockScripts
             {
                 return LcdPattern;
             }
+
+            public void setCommand(string value)
+            {
+                Command = value;
+            }
+
+            public string getCommand()
+            {
+                return Command;
+            }
+
+            
         }
 
         class DasMenuConfig
@@ -108,7 +311,7 @@ namespace IBlockScripts
             private string Title;
             private string Selector = "> ";
             private string Indent = "-";
-            private string Format = "{INDENT}{INDENTSPACE}{LABEL}";
+            private string Format = "{INDENT}{INDENTSPACE}{SELECTED}{LABEL}";
 
             const string CMD_TITLE = "Title";
             const string CMD_SELECTOR = "Selector";
@@ -118,6 +321,7 @@ namespace IBlockScripts
             public const string FORMAT_INDENT = "{INDENT}";
             public const string FORMAT_INDENTSPACE = "{INDENTSPACE}";
             public const string FORMAT_LABEL = "{LABEL}";
+            public const string FORMAT_SELECTED = "{SELECTED}";
 
             public DasMenuConfig(string configData)
             {
@@ -225,19 +429,19 @@ namespace IBlockScripts
 
         class DasMenuView
         {
-            public string getContent(DasMenuItem RootItem, DasMenuConfig Config)
+            public string getContent(DasMenuItem RootItem, DasMenuConfig Config, DasMenuItem Selected)
             {
                 StringBuilder content = new StringBuilder();
                 if (Config.getTitle().Length > 0)
                 {
                     content.AppendLine(Config.getTitle());
                 }
-                content.Append(getContentChilds(RootItem, Config));
+                content.Append(getContentChilds(RootItem, Config, Selected));
 
                 return content.ToString();
             }
 
-            private StringBuilder getContentChilds(DasMenuItem RootItem, DasMenuConfig Config)
+            private StringBuilder getContentChilds(DasMenuItem RootItem, DasMenuConfig Config, DasMenuItem Selected)
             {
                 List<DasMenuItem> Items = RootItem.getChilds();
 
@@ -247,21 +451,22 @@ namespace IBlockScripts
                 for (int i_Items = 0; i_Items < Items.Count; i_Items++)
                 {
                     DasMenuItem Item = Items[i_Items];
-                    content.AppendLine(renderLine(Item, Config));
+                    content.AppendLine(renderLine(Item, Config, Selected));
 
                     if (Item.hasChilds())
                     {
-                        content.Append(getContentChilds(Item, Config).ToString());
+                        content.Append(getContentChilds(Item, Config, Selected).ToString());
                     }
                 }
 
                 return content;
             }
 
-            private string renderLine(DasMenuItem Item, DasMenuConfig Config)
+            private string renderLine(DasMenuItem Item, DasMenuConfig Config, DasMenuItem Selected)
             {
                 string content = Config.getFormat();
                 string indent = getIndent(Item, Config);
+                
 
                 content = content.Replace(DasMenuConfig.FORMAT_INDENT, indent);
                 if(indent.Length > 0)
@@ -271,6 +476,13 @@ namespace IBlockScripts
                 {
                     content = content.Replace(DasMenuConfig.FORMAT_INDENTSPACE, "");
                 }
+                if (Item.Equals(Selected)) {
+                    content = content.Replace(DasMenuConfig.FORMAT_SELECTED, Config.getSelector());
+                } else
+                {
+                    content = content.Replace(DasMenuConfig.FORMAT_SELECTED, "");
+                }
+
                 content = content.Replace(DasMenuConfig.FORMAT_LABEL, Item.getLabel());
 
                 return content;

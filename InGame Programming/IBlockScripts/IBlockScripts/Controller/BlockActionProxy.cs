@@ -43,6 +43,7 @@ namespace IBlockScripts
             -  ? = 1 character
 
             Update 1: Shows Debug info in Terminal.
+            Update 2: BlockType test => Its now psiible to match only certain Blocktypes. "<IMyDoor>*:Open_Off" => close all doors
             
             Example
             ------------------------------
@@ -55,6 +56,7 @@ namespace IBlockScripts
 
         string blockPattern = "";
         string action = "";
+        string type = null;
         MyDebug Debug;
 
         void Main(string args)
@@ -88,7 +90,7 @@ namespace IBlockScripts
         List<IMyTerminalBlock> findBlocks()
         {
             List<IMyTerminalBlock> matches = new List<IMyTerminalBlock>();
-            GridTerminalSystem.GetBlocksOfType<IMyTerminalBlock>(matches, (x => (WildcardMatch.IsLike(blockPattern, (x as IMyTerminalBlock).CustomName, false)) && (x as IMyTerminalBlock).HasAction(action)));
+            GridTerminalSystem.GetBlocksOfType<IMyTerminalBlock>(matches, (x => (WildcardMatch.IsLike(blockPattern, (x as IMyTerminalBlock).CustomName, false) && ( type == null || isInstanceOf(type, (x as IMyTerminalBlock)) ) ) && (x as IMyTerminalBlock).HasAction(action)));
 
             return matches;
         }
@@ -100,12 +102,86 @@ namespace IBlockScripts
             {
                 this.blockPattern = args[0];
                 this.action = args[1];
+                if (args[0].Contains("<") && args[0].Contains(">"))
+                {
+                    string[] tmp = args[0].Split('>');
+                    if (tmp.Length == 2)
+                    {
+                        this.type = tmp[0].Replace("<", "");
+                        this.blockPattern = tmp[1];
+                    }
+                }                
 
                 return true;
             }
 
             return false;
         }
+
+        public bool isInstanceOf(string className, IMyTerminalBlock Block)
+        {
+            
+            switch (className.Trim())
+            {
+                case "IMyProductionBlock": return (Block is IMyProductionBlock);
+                case "IMyCargoContainer": return (Block is IMyCargoContainer);
+                case "IMyTextPanel": return (Block is IMyTextPanel);
+                case "IMyAssembler": return (Block is IMyAssembler);
+                case "IMyRefinery": return (Block is IMyRefinery);
+                case "IMyReactor": return (Block is IMyReactor);
+                case "IMySolarPanel": return (Block is IMySolarPanel);
+                case "IMyBatteryBlock": return (Block is IMyBatteryBlock);
+                case "IMyBeacon": return (Block is IMyBeacon);
+                case "IMyRadioAntenna": return (Block is IMyRadioAntenna);
+                case "IMyAirVent": return (Block is IMyAirVent);
+                case "IMyConveyorSorter": return (Block is IMyConveyorSorter);
+                case "IMyOxygenTank": return (Block is IMyOxygenTank);
+                case "IMyOxygenGenerator": return (Block is IMyOxygenGenerator);
+                case "IMyOxygenFarm": return (Block is IMyOxygenFarm);
+                case "IMyLaserAntenna": return (Block is IMyLaserAntenna);
+                case "IMyThrust": return (Block is IMyThrust);
+                case "IMyGyro": return (Block is IMyGyro);
+                case "IMySensorBlock": return (Block is IMySensorBlock);
+                case "IMyShipConnector": return (Block is IMyShipConnector);
+                case "IMyReflectorLight": return (Block is IMyReflectorLight);
+                case "IMyInteriorLight": return (Block is IMyInteriorLight);
+                case "IMyLandingGear": return (Block is IMyLandingGear);
+                case "IMyProgrammableBlock": return (Block is IMyProgrammableBlock);
+                case "IMyTimerBlock": return (Block is IMyTimerBlock);
+                case "IMyMotorStator": return (Block is IMyMotorStator);
+                case "IMyPistonBase": return (Block is IMyPistonBase);
+                case "IMyProjector": return (Block is IMyProjector);
+                case "IMyShipMergeBlock": return (Block is IMyShipMergeBlock);
+                case "IMySoundBlock": return (Block is IMySoundBlock);
+                case "IMyCollector": return (Block is IMyCollector);
+                case "IMyJumpDrive": return (Block is IMyJumpDrive);
+                case "IMyDoor": return (Block is IMyDoor);
+                case "IMyGravityGeneratorSphere": return (Block is IMyGravityGeneratorSphere);
+                case "IMyGravityGenerator": return (Block is IMyGravityGenerator);
+                case "IMyShipDrill": return (Block is IMyShipDrill);
+                case "IMyShipGrinder": return (Block is IMyShipGrinder);
+                case "IMyShipWelder": return (Block is IMyShipWelder);
+                case "IMyLargeGatlingTurret": return (Block is IMyLargeGatlingTurret);
+                case "IMyLargeInteriorTurret": return (Block is IMyLargeInteriorTurret);
+                case "IMyLargeMissileTurret": return (Block is IMyLargeMissileTurret);
+                case "IMySmallGatlingGun": return (Block is IMySmallGatlingGun);
+                case "IMySmallMissileLauncherReload": return (Block is IMySmallMissileLauncherReload);
+                case "IMySmallMissileLauncher": return (Block is IMySmallMissileLauncher);
+                case "IMyVirtualMass": return (Block is IMyVirtualMass);
+                case "IMyWarhead": return (Block is IMyWarhead);
+                case "IMyFunctionalBlock": return (Block is IMyFunctionalBlock);
+                case "IMyLightingBlock": return (Block is IMyLightingBlock);
+                case "IMyControlPanel": return (Block is IMyControlPanel);
+                case "IMyCockpit": return (Block is IMyCockpit);
+                case "IMyMedicalRoom": return (Block is IMyMedicalRoom);
+                case "IMyRemoteControl": return (Block is IMyRemoteControl);
+                case "IMyButtonPanel": return (Block is IMyButtonPanel);
+                case "IMyCameraBlock": return (Block is IMyCameraBlock);
+                case "IMyOreDetector": return (Block is IMyOreDetector);
+                default: return true;
+            }
+        }
+        
 
         public static class WildcardMatch
         {
@@ -121,6 +197,7 @@ namespace IBlockScripts
             }
             #endregion
         }
+        
 
         #region copy from here
         class MyDebug

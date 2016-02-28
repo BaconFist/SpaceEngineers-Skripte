@@ -61,6 +61,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controller\AreaDefenceDroneAI.cs" />
+    <Compile Include="Controller\AutomatedAntennaSwitch.cs" />
     <Compile Include="Controller\BaconPowerManager.cs" />
     <Compile Include="Controller\BaconSorting.cs" />
     <Compile Include="Controller\DasMenu.cs" />
@@ -72,6 +74,8 @@
     <Compile Include="Controller\DeadmanSwitch.cs" />
     <Compile Include="Controller\BlockActionProxy.cs" />
     <Compile Include="Controller\OnPlayerRange.cs" />
+    <Compile Include="Controller\ProximityDisplay.cs" />
+    <Compile Include="Controller\RADAR1.cs" />
     <Compile Include="Controller\SimpleEvents.cs" />
     <Compile Include="Controller\SolarLightSwitch.cs" />
     <Compile Include="Templates\MyGridProgramTemplate.cs" />
