@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using Sandbox.ModAPI.Ingame;
 using Sandbox.ModAPI.Interfaces;
-using Sandbox.Common.ObjectBuilders;
+//using Sandbox.Common.ObjectBuilders;
 using VRage;
 using VRageMath;
 
@@ -215,7 +215,7 @@ namespace IBlockScripts
                     {
                         cmd_value = args.Substring(cmd_sign_index + 1, args.Length - cmd_sign_index - 1);
                         newArgs.Add("SEL", cmd_value);
-/                    }
+                    }
                 }
             }
             if(cmd_sign_index != -1)
