@@ -35,48 +35,45 @@ namespace IBlockScripts
        */
         void Main(string args)
         {
-          
-
-            Polygon polyFrame = new Polygon();
-            polyFrame
-                    .AddPoint(120, 30)
-                    .AddPoint(270, 30)
-                    .AddPoint(360, 90)
-                    .AddPoint(360, 180)
-                    .AddPoint(300, 270)
-                    .AddPoint(150, 300)
-                    .AddPoint(60, 300)
-                    .AddPoint(60, 300)
-                    .AddPoint(30, 120)
-                    .AddPoint(270, 30)
-            ;
-
-            Polygon polyNose = new Polygon();
-            polyNose
-                .AddPoint(180,120)
-                .AddPoint(150,150)
-                .AddPoint(150,180)
-                .AddPoint(180,180)
-            ;
-
-            Polygon polyMouth = new Polygon();
-            polyMouth
-                .AddPoint(120,270)
-                .AddPoint(150,300)
-                .AddPoint(270,210)
-            ;
 
 
-            BaconGFX bc = new BaconGFX(400, 400, BaconGFX.COLOR_DARK_GRAY);
+            Dotmatrix bc = new Dotmatrix(50, 50, Dotmatrix.COLOR_DARK_GRAY);
             bc
-                .color(BaconGFX.COLOR_YELLOW)
-                .polygon(polyFrame)
-                .polygon(polyNose)
-                .color(BaconGFX.COLOR_RED)
-                .polygon(polyMouth)
-                .color(BaconGFX.COLOR_GREEN)
-                .draw(120,90)
-                .draw(320,90)
+                .color(Dotmatrix.COLOR_GREEN)
+                .polygon(
+                    (new Polygon())
+                    .AddPoint(9, 2)
+                    .AddPoint(26, 2)
+                    .AddPoint(32, 3)
+                    .AddPoint(38, 6)
+                    .AddPoint(42, 12)
+                    .AddPoint(38, 36)
+                    .AddPoint(28, 44)
+                    .AddPoint(9, 44)
+                    .AddPoint(5, 40)
+                    .AddPoint(2, 32)
+                    .AddPoint(2, 4)
+                    .AddPoint(4, 5)
+                    .AddPoint(9, 2)
+                )
+                .polygon(
+                    (new Polygon())
+                    .AddPoint(12, 11)
+                    .AddPoint(10, 30)
+                    .AddPoint(26, 32)
+                    .AddPoint(12, 11)
+                )
+                .polygon(
+                    (new Polygon())
+                    .AddPoint(4, 32)
+                    .AddPoint(9, 38)
+                    .AddPoint(28, 38)
+                    .AddPoint(38, 32)
+                )
+                .moveTo(6, 7)
+                .rectangle(9, 10)
+                .moveTo(28, 7)
+                .rectangle(34, 10)
             ;
 
             StringBuilder sb = bc.getImage();
@@ -91,7 +88,7 @@ namespace IBlockScripts
         }
 
 
-        class BaconGFX
+        class Dotmatrix
         {
 
             public const char COLOR_GREEN = '\uE001';
@@ -113,7 +110,7 @@ namespace IBlockScripts
             private char currentColor;
             private Point cursor;
 
-            public BaconGFX(int width, int height, char background)
+            public Dotmatrix(int width, int height, char background)
             {
                 this.width = width;
                 this.height = height;
@@ -133,7 +130,7 @@ namespace IBlockScripts
                 return content;
             }
 
-            public BaconGFX fillAll()
+            public Dotmatrix fillAll()
             {
                 matrixYX = new char[getHeight()][];
                 for (int i = 0; i < getHeight(); i++)
@@ -177,34 +174,34 @@ namespace IBlockScripts
                 }
             }
 
-            public BaconGFX draw(int x, int y)
+            public Dotmatrix draw(int x, int y)
             {
                 return draw(new Point(x, y));
             }
 
-            public BaconGFX draw(Point point)
+            public Dotmatrix draw(Point point)
             {
                 setPixel(point);
                 return this;
             }
 
-            public BaconGFX moveTo(int x, int y)
+            public Dotmatrix moveTo(int x, int y)
             {
                 return moveTo(new Point(x, y));
             }
 
-            public BaconGFX moveTo(Point point)
+            public Dotmatrix moveTo(Point point)
             {
                 setCursor(point);
                 return this;
             }
 
-            public BaconGFX lineTo(int x, int y)
+            public Dotmatrix lineTo(int x, int y)
             {
                 return lineTo(new Point(x, y));
             }
 
-            public BaconGFX lineTo(Point point)
+            public Dotmatrix lineTo(Point point)
             {
                 Point origin = cursor;
                 Point target = point;
@@ -235,12 +232,12 @@ namespace IBlockScripts
                 return this;
             }
 
-            public BaconGFX rectangle(int x, int y)
+            public Dotmatrix rectangle(int x, int y)
             {
                 return rectangle(new Point(x, y));
             }
 
-            public BaconGFX rectangle(Point point)
+            public Dotmatrix rectangle(Point point)
             {
                 Polygon poly = new Polygon();
                 poly.Add(cursor);
@@ -252,7 +249,7 @@ namespace IBlockScripts
                 return polygon(poly);
             }
 
-            public BaconGFX polygon(Polygon poly)
+            public Dotmatrix polygon(Polygon poly)
             {
                 for (int i = 0; i < poly.Count; i++)
                 {
@@ -269,7 +266,7 @@ namespace IBlockScripts
                 return this;
             }
 
-            public BaconGFX color(char color)
+            public Dotmatrix color(char color)
             {
                 currentColor = color;
 
