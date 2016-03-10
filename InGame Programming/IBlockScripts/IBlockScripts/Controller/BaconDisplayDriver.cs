@@ -39,35 +39,35 @@ namespace IBlockScripts
 
             Polygon polyFrame = new Polygon();
             polyFrame
-                    .AddPoint(4, 1)
-                    .AddPoint(9, 1)
-                    .AddPoint(12, 3)
-                    .AddPoint(12, 6)
-                    .AddPoint(10, 9)
-                    .AddPoint(5, 10)
-                    .AddPoint(2, 10)
-                    .AddPoint(2, 10)
-                    .AddPoint(1, 4)
-                    .AddPoint(9, 1)
+                    .AddPoint(120, 30)
+                    .AddPoint(270, 30)
+                    .AddPoint(360, 90)
+                    .AddPoint(360, 180)
+                    .AddPoint(300, 270)
+                    .AddPoint(150, 300)
+                    .AddPoint(60, 300)
+                    .AddPoint(60, 300)
+                    .AddPoint(30, 120)
+                    .AddPoint(270, 30)
             ;
 
             Polygon polyNose = new Polygon();
             polyNose
-                .AddPoint(6,4)
-                .AddPoint(5,5)
-                .AddPoint(5,6)
-                .AddPoint(6,6)
+                .AddPoint(180,120)
+                .AddPoint(150,150)
+                .AddPoint(150,180)
+                .AddPoint(180,180)
             ;
 
             Polygon polyMouth = new Polygon();
             polyMouth
-                .AddPoint(4,9)
-                .AddPoint(5,10)
-                .AddPoint(9,7)
+                .AddPoint(120,270)
+                .AddPoint(150,300)
+                .AddPoint(270,210)
             ;
 
 
-            BaconGFX bc = new BaconGFX(60, 20, BaconGFX.COLOR_DARK_GRAY);
+            BaconGFX bc = new BaconGFX(400, 400, BaconGFX.COLOR_DARK_GRAY);
             bc
                 .color(BaconGFX.COLOR_YELLOW)
                 .polygon(polyFrame)
@@ -75,9 +75,8 @@ namespace IBlockScripts
                 .color(BaconGFX.COLOR_RED)
                 .polygon(polyMouth)
                 .color(BaconGFX.COLOR_GREEN)
-                .draw(4,3)
-                .draw(8,3)
-                .rectangle(56, 16)
+                .draw(120,90)
+                .draw(320,90)
             ;
 
             StringBuilder sb = bc.getImage();
