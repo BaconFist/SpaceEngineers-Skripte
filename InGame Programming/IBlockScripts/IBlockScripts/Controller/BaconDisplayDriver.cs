@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using Sandbox.ModAPI.Ingame;
 using Sandbox.ModAPI.Interfaces;
-//using Sandbox.Common.ObjectBuilders;
+////using Sandbox.Common.ObjectBuilders;
 using VRage;
 using VRageMath;
 
@@ -35,9 +35,7 @@ namespace IBlockScripts
        */
         void Main(string args)
         {
-            IMyTerminalBlock lcd = GridTerminalSystem.GetBlockWithName("LCD_GFX");
-            if(lcd is IMyTextPanel)
-            {
+           
                 BaconGrafics bc = new BaconGrafics(150,150);
                 bc
                     .color(BaconGrafics.COLOR_GREEN)
@@ -46,10 +44,18 @@ namespace IBlockScripts
                     ;
 
                 StringBuilder sb = bc.getImage();
+
+
+
+            IMyTerminalBlock lcd = GridTerminalSystem.GetBlockWithName("LCD_GFX");
+            if (lcd is IMyTextPanel)
+            {
                 (lcd as IMyTextPanel).WritePublicText(sb.ToString());
             }
         }
+        
 
+        
         class BaconGrafics
         {
 
