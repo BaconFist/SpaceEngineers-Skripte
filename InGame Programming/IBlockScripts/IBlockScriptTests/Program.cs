@@ -10,19 +10,43 @@ namespace IBlockScriptTests
     {
         static void Main(string[] args)
         {
-            BaconGFX bc = new BaconGFX(60, 20, BaconGFX.COLOR_DARK_GRAY);
+            Dotmatrix bc = new Dotmatrix(50, 50, Dotmatrix.COLOR_DARK_GRAY);
             bc
-                .color(BaconGFX.COLOR_GREEN)
+                .color(Dotmatrix.COLOR_GREEN)
                 .polygon(
                     (new Polygon())
-                    .AddPoint(0,10)
-                    .AddPoint(30,0)
-                    .AddPoint(59,10)
-                    .AddPoint(30,19)
-                    .AddPoint(0,10)
+                    .AddPoint(9,2)
+                    .AddPoint(26,2)
+                    .AddPoint(32,3)
+                    .AddPoint(38,6)
+                    .AddPoint(42,12)
+                    .AddPoint(38,36)
+                    .AddPoint(28,44)
+                    .AddPoint(9,44)
+                    .AddPoint(5,40)
+                    .AddPoint(2,32)
+                    .AddPoint(2,4)
+                    .AddPoint(4,5)
+                    .AddPoint(9, 2)
                 )
-                .moveTo(3,3)
-                .rectangle(56,16)                
+                .polygon(
+                    (new Polygon())
+                    .AddPoint(12,11)
+                    .AddPoint(10,30)
+                    .AddPoint(26,32)
+                    .AddPoint(12,11)
+                )
+                .polygon(
+                    (new Polygon())
+                    .AddPoint(4,32)
+                    .AddPoint(9,38)
+                    .AddPoint(28,38)
+                    .AddPoint(38,32)
+                )
+                .moveTo(6,7)
+                .rectangle(9,10)
+                .moveTo(28,7)
+                .rectangle(34,10)
             ;
 
             StringBuilder sb = bc.getImage();
@@ -31,7 +55,7 @@ namespace IBlockScriptTests
             System.Console.ReadKey();
         }
 
-        class BaconGFX
+        class Dotmatrix
         {
 
 //            public const char COLOR_GREEN = '\uE001';
@@ -45,7 +69,7 @@ namespace IBlockScriptTests
             //public const char COLOR_DARK_GRAY = '\uE00F';
             public const char COLOR_DARK_GRAY = '-';
 
-            private double pixelTolerance = 0.04;
+            private double pixelTolerance = 0.1;
 
             private int width;
             private int height;
@@ -53,7 +77,7 @@ namespace IBlockScriptTests
             private char currentColor;
             private Point cursor;
 
-            public BaconGFX(int width, int height, char background)
+            public Dotmatrix(int width, int height, char background)
             {
                 this.width = width;
                 this.height = height;
@@ -73,7 +97,7 @@ namespace IBlockScriptTests
                 return content;
             }
 
-            public BaconGFX fillAll()
+            public Dotmatrix fillAll()
             {
                 matrixYX = new char[getHeight()][];
                 for (int i = 0; i < getHeight(); i++)
@@ -117,29 +141,29 @@ namespace IBlockScriptTests
                 }
             }
 
-            public BaconGFX draw(Point point)
+            public Dotmatrix draw(Point point)
             {
                 setPixel(point);
                 return this;
             }
 
-            public BaconGFX moveTo(int x, int y)
+            public Dotmatrix moveTo(int x, int y)
             {
                 return moveTo(new Point(x,y));
             }
 
-            public BaconGFX moveTo(Point point)
+            public Dotmatrix moveTo(Point point)
             {
                 setCursor(point);
                 return this;
             }
 
-            public BaconGFX lineTo(int x, int y)
+            public Dotmatrix lineTo(int x, int y)
             {
                 return lineTo(new Point(x, y));
             }
 
-            public BaconGFX lineTo(Point point)
+            public Dotmatrix lineTo(Point point)
             {
                 Point origin = cursor;
                 Point target = point;
@@ -170,12 +194,12 @@ namespace IBlockScriptTests
                 return this;
             }
 
-            public BaconGFX rectangle(int x, int y)
+            public Dotmatrix rectangle(int x, int y)
             {
                 return rectangle(new Point(x,y));
             }
 
-            public BaconGFX rectangle(Point point)
+            public Dotmatrix rectangle(Point point)
             {
                 Polygon poly = new Polygon();
                 poly.Add(cursor);
@@ -187,7 +211,7 @@ namespace IBlockScriptTests
                 return polygon(poly);
             }
 
-            public BaconGFX polygon(Polygon poly)
+            public Dotmatrix polygon(Polygon poly)
             {
                 for (int i = 0; i < poly.Count; i++)
                 {
@@ -204,7 +228,7 @@ namespace IBlockScriptTests
                 return this;
             }
 
-            public BaconGFX color(char color)
+            public Dotmatrix color(char color)
             {
                 currentColor = color;
 
