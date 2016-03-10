@@ -35,15 +35,52 @@ namespace IBlockScripts
        */
         void Main(string args)
         {
-           
-                BaconGrafics bc = new BaconGrafics(150,150);
-                bc
-                    .color(BaconGrafics.COLOR_GREEN)
-                    .moveTo(new Point(5,5))
-                    .lineTo(new Point(30,40))
-                    ;
+          
 
-                StringBuilder sb = bc.getImage();
+            Polygon polyFrame = new Polygon();
+            polyFrame
+                    .AddPoint(4, 1)
+                    .AddPoint(9, 1)
+                    .AddPoint(12, 3)
+                    .AddPoint(12, 6)
+                    .AddPoint(10, 9)
+                    .AddPoint(5, 10)
+                    .AddPoint(2, 10)
+                    .AddPoint(2, 10)
+                    .AddPoint(1, 4)
+                    .AddPoint(9, 1)
+            ;
+
+            Polygon polyNose = new Polygon();
+            polyNose
+                .AddPoint(6,4)
+                .AddPoint(5,5)
+                .AddPoint(5,6)
+                .AddPoint(6,6)
+            ;
+
+            Polygon polyMouth = new Polygon();
+            polyMouth
+                .AddPoint(4,9)
+                .AddPoint(5,10)
+                .AddPoint(9,7)
+            ;
+
+
+            BaconGFX bc = new BaconGFX(60, 20, BaconGFX.COLOR_DARK_GRAY);
+            bc
+                .color(BaconGFX.COLOR_YELLOW)
+                .polygon(polyFrame)
+                .polygon(polyNose)
+                .color(BaconGFX.COLOR_RED)
+                .polygon(polyMouth)
+                .color(BaconGFX.COLOR_GREEN)
+                .draw(4,3)
+                .draw(8,3)
+                .rectangle(56, 16)
+            ;
+
+            StringBuilder sb = bc.getImage();
 
 
 
@@ -53,13 +90,13 @@ namespace IBlockScripts
                 (lcd as IMyTextPanel).WritePublicText(sb.ToString());
             }
         }
-        
 
-        
-        class BaconGrafics
+
+        class BaconGFX
         {
 
             public const char COLOR_GREEN = '\uE001';
+            //public const char COLOR_GREEN = 'X';
             public const char COLOR_BLUE = '\uE002';
             public const char COLOR_RED = '\uE003';
             public const char COLOR_YELLOW = '\uE004';
@@ -67,65 +104,65 @@ namespace IBlockScripts
             public const char COLOR_LIGHT_GRAY = '\uE00E';
             public const char COLOR_MEDIUM_GRAY = '\uE00D';
             public const char COLOR_DARK_GRAY = '\uE00F';
+            //public const char COLOR_DARK_GRAY = '-';
 
-            private double pixelTolerance = 2;
+            private double pixelTolerance = 0.04;
 
-            private int resolutionWidth;
-            private int resolutionHeight;
-            private char[] displayDataRaw = null;
+            private int width;
+            private int height;
+            private char[][] matrixYX;
             private char currentColor;
             private Point cursor;
 
-            public BaconGrafics(int width, int heigth)
+            public BaconGFX(int width, int height, char background)
             {
-                cursor = new Point(0, 0);
-                color(COLOR_DARK_GRAY);
-                resolutionWidth = width;
-                resolutionHeight = heigth;                
+                this.width = width;
+                this.height = height;
+                color(background);
                 fillAll();
-                color(COLOR_WHITE);                 
+                moveTo(new Point(0, 0));
             }
 
             public StringBuilder getImage()
             {
-                StringBuilder img = new StringBuilder();
-                char[] chunk = new char[getResolutionWidth()];
-                int count = getResolutionWidth();
-                for(int i = 0; i < getResolutionHeight(); i++)
+                StringBuilder content = new StringBuilder();
+                for (int i = 0; i < matrixYX.Length; i++)
                 {
-                    int startIndex = i * getResolutionWidth();
-                    Array.Copy(displayDataRaw, startIndex, chunk, 0, count);
-                    img.AppendLine(new String(chunk));
+                    content.AppendLine(new String(matrixYX[i]));
                 }
-                
-                return img;
+
+                return content;
             }
 
-            public BaconGrafics fillAll()
+            public BaconGFX fillAll()
             {
-                displayDataRaw = new String(currentColor, getResolutionWidth() * getResolutionHeight()).ToCharArray();
+                matrixYX = new char[getHeight()][];
+                for (int i = 0; i < getHeight(); i++)
+                {
+                    matrixYX[i] = (new String(currentColor, getWidth())).ToCharArray();
+                }
 
                 return this;
             }
-            
-            public int getResolutionWidth()
+
+            public int getWidth()
             {
-                return resolutionWidth;
+                return width;
             }
 
             private int getXMax()
             {
-                return getResolutionWidth() - 1;
+                return getWidth() - 1;
             }
 
             private int getYMax()
             {
-                return getResolutionHeight() - 1;
+                return getHeight() - 1;
             }
 
-            public int getResolutionHeight()
+            public int getHeight()
             {
-                return resolutionHeight;
+                return height;
             }
 
             private void setCursor(Point point)
@@ -135,70 +172,96 @@ namespace IBlockScripts
 
             private void setPixel(Point point)
             {
-                int index = getValidDataIndedx(point);
-                if (isIndexInRange(index))
+                if (isPointInViewport(point))
                 {
-                    displayDataRaw[index] = currentColor;
+                    matrixYX[point.Y][point.X] = currentColor;
                 }
             }
 
-            public BaconGrafics draw(Point point)
+            public BaconGFX draw(int x, int y)
+            {
+                return draw(new Point(x, y));
+            }
+
+            public BaconGFX draw(Point point)
             {
                 setPixel(point);
                 return this;
             }
 
-            public BaconGrafics moveTo(Point point)
+            public BaconGFX moveTo(int x, int y)
             {
-                setCursor(getNormalizedPoint(point));
+                return moveTo(new Point(x, y));
+            }
+
+            public BaconGFX moveTo(Point point)
+            {
+                setCursor(point);
                 return this;
             }
 
-            public BaconGrafics lineTo(Point point) {
-                Point origin = getNormalizedPoint(cursor);
-                Point target = getNormalizedPoint(point);
+            public BaconGFX lineTo(int x, int y)
+            {
+                return lineTo(new Point(x, y));
+            }
+
+            public BaconGFX lineTo(Point point)
+            {
+                Point origin = cursor;
+                Point target = point;
 
                 int xLow = System.Math.Min(origin.X, target.X);
                 int xHight = System.Math.Max(origin.X, target.X);
                 int yLow = System.Math.Min(origin.Y, target.Y);
-                int yHigh = System.Math.Max(origin.Y, target.Y);
-                
-                for(int ix= xLow; ix < xHight; ix++)
+                int yHight = System.Math.Max(origin.Y, target.Y);
+
+                xLow = (xLow < 0) ? 0 : xLow;
+                yLow = (yLow < 0) ? 0 : yLow;
+                yHight = (yHight < matrixYX.Length) ? yHight : (matrixYX.Length - 1);
+
+                for (int iY = yLow; iY <= yHight; iY++)
                 {
-                    for(int iy = yLow; iy < yHigh; iy++)
+                    xHight = (xHight < matrixYX[iY].Length) ? xHight : (matrixYX[iY].Length - 1);
+                    for (int iX = xLow; iX <= xHight; iX++)
                     {
-                        Point currentPos = new Point(ix,iy);
-                        if (isPointOnVector(currentPos, origin, target)){
-                            draw(currentPos);
+                        Point dot = new Point(iX, iY);
+                        if (isPointOnVector(dot, origin, target))
+                        {
+                            draw(dot);
                         }
                     }
                 }
-
 
                 moveTo(target);
                 return this;
             }
 
-            public BaconGrafics rectangle(Point point)
+            public BaconGFX rectangle(int x, int y)
+            {
+                return rectangle(new Point(x, y));
+            }
+
+            public BaconGFX rectangle(Point point)
             {
                 Polygon poly = new Polygon();
                 poly.Add(cursor);
-                poly.AddPoint(point.X,cursor.Y);
+                poly.AddPoint(point.X, cursor.Y);
                 poly.Add(point);
-                poly.AddPoint(cursor.X,point.Y);
+                poly.AddPoint(cursor.X, point.Y);
                 poly.Add(cursor);
 
                 return polygon(poly);
             }
 
-            public BaconGrafics polygon(Polygon poly)
+            public BaconGFX polygon(Polygon poly)
             {
-                for(int i = 0; i < poly.Count; i++)
+                for (int i = 0; i < poly.Count; i++)
                 {
                     if (i == 0)
                     {
                         moveTo(poly[i]);
-                    } else
+                    }
+                    else
                     {
                         lineTo(poly[i]);
                     }
@@ -207,59 +270,83 @@ namespace IBlockScripts
                 return this;
             }
 
-            public BaconGrafics color(char color)
+            public BaconGFX color(char color)
             {
                 currentColor = color;
 
                 return this;
             }
 
-            private bool isIndexInRange(int index)
+            private bool isPointInViewport(Point point)
             {
-                return index < displayDataRaw.Length;
+                if (0 <= point.Y && point.Y < matrixYX.Length)
+                {
+                    if (0 <= point.X && point.X < matrixYX[point.Y].Length)
+                    {
+                        return true;
+                    }
+                }
+                return false;
             }
 
-            private int getValidDataIndedx(Point point)
+            private bool isPointOnVector(Point P, Point A, Point B)
             {
-                return getDataIndex(getNormalizedPoint(point));
+                if (P.Equals(A) || P.Equals(B))
+                {
+                    return true;
+                }
+
+                int diffABX = B.X - A.X;
+                int diffABY = B.Y - A.Y;
+                int diffPAX = P.X - A.X;
+                int diffPAY = P.Y - A.Y;
+
+                if (diffABX == 0)
+                {
+                    return A.X <= P.X && P.X <= B.X;
+                }
+                if (diffABY == 0)
+                {
+                    return A.Y <= P.Y && P.Y <= B.Y;
+                }
+
+                double eqX = (double)diffPAX / (double)diffABX;
+                double eqY = (double)diffPAY / (double)diffABY;
+                double diffEq = System.Math.Max(eqX, eqY) - System.Math.Min(eqX, eqY);
+
+                return (diffEq <= pixelTolerance);
             }
 
-            private int getDataIndex(Point point)
-            {
-                return (getResolutionHeight() * point.Y) + point.X;
-            }
 
-            private Point getNormalizedPoint(Point point)
-            {
-                Point normalPoint = new Point(0, 0);
 
-                normalPoint.X = (point.X < getXMax()) ? point.X : getXMax();
-                normalPoint.Y = (point.Y < getYMax()) ? point.Y : getYMax();
-                normalPoint.X = (point.X < 0) ? 0 : point.X;
-                normalPoint.Y = (point.Y < 0) ? 0 : point.Y;
-
-                return normalPoint;
-            }
-
-            private bool isPointOnVector(Point point, Point vecA, Point vecB)
-            {
-                double resX = (point.X - vecA.X) / (vecB.X - vecA.X);
-                double rexY = (point.Y - vecA.Y) / (vecB.Y - vecA.Y);
-
-                double diffX = System.Math.Max(resX, rexY) - System.Math.Min(resX, rexY);
-
-                return (diffX <= pixelTolerance);
-            }
-                    
         }
 
         class Polygon : List<Point>
         {
-            public void AddPoint(int x, int y)
+            public Polygon AddPoint(int x, int y)
             {
-                Add(new Point(x,y));
+                Point P = new Point(x,y);
+                Add(P);
+                return this;
             }
         }
+
+        //class Point
+        //{
+        //    public int X;
+        //    public int Y;
+
+        //    public Point(int X, int Y)
+        //    {
+        //        this.X = X;
+        //        this.Y = Y;
+        //    }
+
+        //    public bool Equals(Point point)
+        //    {
+        //        return this.X == point.X && this.Y == point.Y;
+        //    }
+        //}
         #endregion
     }
 }
