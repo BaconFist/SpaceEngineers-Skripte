@@ -34,6 +34,44 @@ namespace IBlockScripts
           
        */
 
+      
+
+        void Main(string args)
+        {
+
+
+            Font myFont = Font.createFromString(samplefontdata);
+
+            Dotmatrix bc = new Dotmatrix(85, 95, Dotmatrix.COLOR_DARK_GRAY);
+            bc
+                .color(Dotmatrix.COLOR_GREEN)
+                .moveTo(3, 3)
+                .text("Hello World!", myFont)
+                .moveTo(1, 1)
+                .rectangle(73, 9)
+                .moveTo(1, 11)
+                .lineTo(80,11)
+                .moveTo(4,15)
+                .color(Dotmatrix.COLOR_RED)
+                .rectangle(40,90)
+                .moveTo(7,18)
+                .color(Dotmatrix.COLOR_WHITE)
+                .rectangle(32,79)
+                .moveTo(2,20)
+                .color(Dotmatrix.COLOR_BLUE)
+                .text("Dotmatrix LCD - Test",myFont)
+            ;
+            StringBuilder sb = bc.getImage();
+
+
+
+            IMyTerminalBlock lcd = GridTerminalSystem.GetBlockWithName("LCD_GFX");
+            if (lcd is IMyTextPanel)
+            {
+                (lcd as IMyTextPanel).WritePublicText(sb.ToString());
+            }
+        }
+
         string samplefontdata = @"@FONT 5 5 samplefont
 ! 0010000100001000000000100
 "" 0101001010000000000000000
@@ -102,42 +140,6 @@ _ 0000000000000000000011111
 } 0110000100000100010001100
 ~ 0000001000101010001000000
 @ENDFONT";
-
-        void Main(string args)
-        {
-
-
-            Font myFont = Font.createFromString(samplefontdata);
-
-            Dotmatrix bc = new Dotmatrix(85, 95, Dotmatrix.COLOR_DARK_GRAY);
-            bc
-                .color(Dotmatrix.COLOR_GREEN)
-                .moveTo(3, 3)
-                .text("Hello World!", myFont)
-                .moveTo(1, 1)
-                .rectangle(73, 9)
-                .moveTo(1, 11)
-                .lineTo(80,11)
-                .moveTo(4,15)
-                .color(Dotmatrix.COLOR_RED)
-                .rectangle(40,90)
-                .moveTo(7,18)
-                .color(Dotmatrix.COLOR_WHITE)
-                .rectangle(32,79)
-                .moveTo(2,20)
-                .color(Dotmatrix.COLOR_BLUE)
-                .text("Dotmatrix LCD - Test",myFont)
-            ;
-            StringBuilder sb = bc.getImage();
-
-
-
-            IMyTerminalBlock lcd = GridTerminalSystem.GetBlockWithName("LCD_GFX");
-            if (lcd is IMyTextPanel)
-            {
-                (lcd as IMyTextPanel).WritePublicText(sb.ToString());
-            }
-        }
 
         class Dotmatrix
         {
