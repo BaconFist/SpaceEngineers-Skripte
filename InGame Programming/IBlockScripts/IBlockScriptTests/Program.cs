@@ -84,8 +84,10 @@ _ 0000000000000000000011111
             Dotmatrix bc = new Dotmatrix(100, 20, Dotmatrix.COLOR_DARK_GRAY);
             bc
                 .color(Dotmatrix.COLOR_GREEN)
-                .moveTo(1,1)
+                .moveTo(3,3)
                 .text("Hello World!", myFont)
+                .moveTo(1,1)
+                .rectangle(73, 9)
             ;
 
             StringBuilder sb = bc.getImage();

@@ -33,49 +33,101 @@ namespace IBlockScripts
            ------------------------------
           
        */
+
+        string samplefontdata = @"@FONT 5 5 samplefont
+! 0010000100001000000000100
+"" 0101001010000000000000000
+# 0101011111010101111101010
+$ 0111110100011100010111110
+% 1100111010001000101110011
+' 0010000100000000000000000
+( 0001000100001000010000010
+) 0100000100001000010001000
+* 0101000100010100000000000
+, 0000000000000000010001000
+- 0000000000011100000000000
+. 0000000000000000000000100
+/ 0000100010001000100010000
+0 0111010011101011100101110
+1 0011000010000100001000111
+2 1111000001011101000011111
+3 1111000001001100000111110
+4 0011001010100101111100010
+5 1111110000111100000111110
+6 0111110000111101000101110
+7 1111100001000100010001000
+8 0111010001011101000101110
+9 0111010001011110000111110
+: 0000000100000000010000000
+; 0000000100000000010001000
+< 0000100010001000001000001
+= 0000001110000000111000000
+> 1000001000001000100010000
+? 0111000001001100000000100
+@ 0111110001101111011001111
+A 0010001010100011111110001
+B 1111010001111101000111110
+C 0111110000100001000001111
+D 1111010001100011000111110
+E 1111110000111001000011111
+F 1111110000111001000010000
+G 0111110000100111000101111
+H 1000110001111111000110001
+I 1111100100001000010011111
+J 1111100010000101001001100
+K 1000110010111001001010001
+L 1000010000100001000011111
+M 1000111011101011000110001
+N 1000111001101011001110001
+O 0111010001100011000101110
+P 1111010001111101000010000
+Q 0111010001101011001001101
+R 1111010001111101000110001
+S 0111110000011100000111110
+T 1111100100001000010000100
+U 1000110001100011000101110
+V 1000110001100010101000100
+W 1000110001101011101110001
+X 1000101010001000101010001
+Y 1000101010001000010000100
+Z 1111100010001000100011111
+[ 0011000100001000010000110
+\ 1000001000001000001000001
+] 0110000100001000010001100
+^ 0010001010000000000000000
+_ 0000000000000000000011111
+` 0010000010000000000000000
+{ 0011000100010000010000110
+| 0010000100001000010000100
+} 0110000100000100010001100
+~ 0000001000101010001000000
+@ENDFONT";
+
         void Main(string args)
         {
 
 
-            Dotmatrix bc = new Dotmatrix(50, 50, Dotmatrix.COLOR_DARK_GRAY);
+            Font myFont = Font.createFromString(samplefontdata);
+
+            Dotmatrix bc = new Dotmatrix(85, 95, Dotmatrix.COLOR_DARK_GRAY);
             bc
                 .color(Dotmatrix.COLOR_GREEN)
-                .polygon(
-                    (new Polygon())
-                    .AddPoint(9, 2)
-                    .AddPoint(26, 2)
-                    .AddPoint(32, 3)
-                    .AddPoint(38, 6)
-                    .AddPoint(42, 12)
-                    .AddPoint(38, 36)
-                    .AddPoint(28, 44)
-                    .AddPoint(9, 44)
-                    .AddPoint(5, 40)
-                    .AddPoint(2, 32)
-                    .AddPoint(2, 4)
-                    .AddPoint(4, 5)
-                    .AddPoint(9, 2)
-                )
-                .polygon(
-                    (new Polygon())
-                    .AddPoint(12, 11)
-                    .AddPoint(10, 30)
-                    .AddPoint(26, 32)
-                    .AddPoint(12, 11)
-                )
-                .polygon(
-                    (new Polygon())
-                    .AddPoint(4, 32)
-                    .AddPoint(9, 38)
-                    .AddPoint(28, 38)
-                    .AddPoint(38, 32)
-                )
-                .moveTo(6, 7)
-                .rectangle(9, 10)
-                .moveTo(28, 7)
-                .rectangle(34, 10)
+                .moveTo(3, 3)
+                .text("Hello World!", myFont)
+                .moveTo(1, 1)
+                .rectangle(73, 9)
+                .moveTo(1, 11)
+                .lineTo(80,11)
+                .moveTo(4,15)
+                .color(Dotmatrix.COLOR_RED)
+                .rectangle(40,90)
+                .moveTo(7,18)
+                .color(Dotmatrix.COLOR_WHITE)
+                .rectangle(32,79)
+                .moveTo(2,20)
+                .color(Dotmatrix.COLOR_BLUE)
+                .text("Dotmatrix LCD - Test",myFont)
             ;
-
             StringBuilder sb = bc.getImage();
 
 
@@ -86,7 +138,6 @@ namespace IBlockScripts
                 (lcd as IMyTextPanel).WritePublicText(sb.ToString());
             }
         }
-
 
         class Dotmatrix
         {
@@ -102,7 +153,7 @@ namespace IBlockScripts
             public const char COLOR_DARK_GRAY = '\uE00F';
             //public const char COLOR_DARK_GRAY = '-';
 
-            private double pixelTolerance = 0.04;
+            private double pixelTolerance = 0.1;
 
             private int width;
             private int height;
@@ -174,12 +225,7 @@ namespace IBlockScripts
                 }
             }
 
-            public Dotmatrix draw(int x, int y)
-            {
-                return draw(new Point(x, y));
-            }
-
-            public Dotmatrix draw(Point point)
+            public Dotmatrix dot(Point point)
             {
                 setPixel(point);
                 return this;
@@ -223,7 +269,7 @@ namespace IBlockScripts
                         Point dot = new Point(iX, iY);
                         if (isPointOnVector(dot, origin, target))
                         {
-                            draw(dot);
+                            this.dot(dot);
                         }
                     }
                 }
@@ -239,7 +285,7 @@ namespace IBlockScripts
 
             public Dotmatrix rectangle(Point point)
             {
-                Polygon poly = new Polygon();
+                PointList poly = new PointList();
                 poly.Add(cursor);
                 poly.AddPoint(point.X, cursor.Y);
                 poly.Add(point);
@@ -249,7 +295,7 @@ namespace IBlockScripts
                 return polygon(poly);
             }
 
-            public Dotmatrix polygon(Polygon poly)
+            public Dotmatrix polygon(PointList poly)
             {
                 for (int i = 0; i < poly.Count; i++)
                 {
@@ -260,6 +306,39 @@ namespace IBlockScripts
                     else
                     {
                         lineTo(poly[i]);
+                    }
+                }
+
+                return this;
+            }
+
+            public Dotmatrix text(String text, Font font)
+            {
+                char[] chars = text.ToCharArray();
+                for (int i = 0; i < chars.Length; i++)
+                {
+                    string key = (new String(chars[i], 1)).ToUpper();
+                    PointList points = new PointList();
+                    if (font.getData().TryGetValue(key, out points))
+                    {
+                        polydot(points, true);
+                        moveTo(cursor.X + font.getWidth() + 1, cursor.Y);
+                    }
+                }
+
+                return this;
+            }
+
+            public Dotmatrix polydot(PointList dots, bool relative = false)
+            {
+                int xRel = (relative) ? cursor.X : 0;
+                int yRel = (relative) ? cursor.Y : 0;
+                for (int i = 0; i < dots.Count; i++)
+                {
+                    Point pos = new Point(dots[i].X + xRel, dots[i].Y + yRel);
+                    if (isPointInViewport(pos))
+                    {
+                        setPixel(pos);
                     }
                 }
 
@@ -317,32 +396,124 @@ namespace IBlockScripts
 
         }
 
-        class Polygon : List<Point>
+        class Font
         {
-            public Polygon AddPoint(int x, int y)
+            private Dictionary<string, PointList> data = new Dictionary<string, PointList>();
+            private String name;
+            private int width;
+            private int height;
+
+            static public Font createFromString(String definition)
             {
-                Point P = new Point(x,y);
-                Add(P);
-                return this;
+                Font newFont = new Font();
+                string[] fontDefinition = definition.Split(new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+
+                for (int iFD = 0; iFD < fontDefinition.Length; iFD++)
+                {
+                    string[] lineData = fontDefinition[iFD].Split(' ');
+                    if (lineData.Length > 0)
+                    {
+                        switch (lineData[0])
+                        {
+                            case "@FONT":
+                                if (lineData.Length > 2)
+                                {
+                                    int w = 0;
+                                    if (int.TryParse(lineData[1], out w))
+                                    {
+                                        newFont.setWidth(w);
+                                    }
+                                    else
+                                    {
+                                        throw new ArgumentException("no proper font width");
+                                    }
+                                    int h = 0;
+                                    if (int.TryParse(lineData[2], out h))
+                                    {
+                                        newFont.setHeight(h);
+                                    }
+                                    else
+                                    {
+                                        throw new ArgumentException("no proper font height");
+                                    }
+
+                                    newFont.setName(lineData[3]);
+                                }
+                                break;
+                            case "@ENDFONT":
+                                newFont.getData().Add(" ", new PointList());
+                                break;
+                            default:
+                                if (lineData.Length > 1)
+                                {
+                                    string chr = lineData[0];
+                                    if (!newFont.getData().ContainsKey(chr))
+                                    {
+                                        newFont.getData().Add(chr, PointList.createFromBitmap(newFont.getHeight(), lineData[1]));
+                                    }
+                                }
+                                break;
+                        }
+                    }
+                }
+
+
+                return newFont;
+            }
+
+            public void setWidth(int w)
+            {
+                width = w;
+            }
+
+            public void setHeight(int h)
+            {
+                height = h;
+            }
+
+            public int getWidth()
+            {
+                return width;
+            }
+
+            public int getHeight()
+            {
+                return height;
+            }
+
+            public void setName(string n)
+            {
+                name = n;
+            }
+
+            public Dictionary<string, PointList> getData()
+            {
+                return data;
             }
         }
 
-        //class Point
-        //{
-        //    public int X;
-        //    public int Y;
+        class PointList : List<Point>
+        {
+            public PointList AddPoint(int x, int y)
+            {
+                Add(new Point(x, y));
+                return this;
+            }
 
-        //    public Point(int X, int Y)
-        //    {
-        //        this.X = X;
-        //        this.Y = Y;
-        //    }
+            static public PointList createFromBitmap(int width, string data)
+            {
+                PointList pl = new PointList();
+                for (int i = data.IndexOf("1"); i > -1; i = data.IndexOf("1", i + 1))
+                {
+                    int x = 0;
+                    int y = 0;
+                    y = System.Math.DivRem(i, width, out x);
+                    pl.AddPoint(x, y);
+                }
 
-        //    public bool Equals(Point point)
-        //    {
-        //        return this.X == point.X && this.Y == point.Y;
-        //    }
-        //}
+                return pl;
+            }
+        }
         #endregion
     }
 }
