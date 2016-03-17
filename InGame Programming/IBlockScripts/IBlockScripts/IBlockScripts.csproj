@@ -69,6 +69,7 @@
     <Compile Include="Controller\BaconDotmatrixLCD.cs" />
     <Compile Include="Controller\BaconPowerManager.cs" />
     <Compile Include="Controller\BaconSorting.cs" />
+    <Compile Include="Controller\BFDotmatrix.cs" />
     <Compile Include="Controller\DasMenu.cs" />
     <Compile Include="Controller\GpsDistance.cs" />
     <Compile Include="Controller\GridBatteryControl.cs" />
@@ -86,7 +87,6 @@
     <Compile Include="Templates\MyGridProgramTemplate.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
