@@ -590,16 +590,7 @@ namespace IBlockScripts
                 }
             }
         }
-        
-        class PointCollection : List<Point>
-        {
-            public PointCollection AddPoint(int x, int y)
-            {
-                Add(new Point(x,y));
-                return this;
-            }
-        }       
-        
+                
         #endregion
     }
 }
