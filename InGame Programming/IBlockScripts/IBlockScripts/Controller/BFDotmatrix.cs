@@ -36,10 +36,46 @@ namespace IBlockScripts
         {
 
         }
+
+        abstract class Drawing
+        {
+            public class Canvas
+            {
+                private Dictionary<Point, Model.Pixel> pixels = new Dictionary<Point, Model.Pixel>();
+                private Model.Dimension dimensions;
+                private char bgColDefault;
+                
+                public Canvas(Model.Dimension dimensions, char backgroundColor)
+                {
+                    this.dimensions = dimensions;
+                    bgColDefault = backgroundColor;
+                } 
+
+                public Model.Dimension getDimensions()
+                {
+                    return dimensions;
+                }
+                
+                public bool hasPixel(Point point)
+                {
+                    return pixels.ContainsKey(point);
+                }
+
+                public Model.Pixel getPixel(Point point)
+                {
+                    if (!hasPixel(point))
+                    {
+                        pixels.Add(point, new Model.Pixel(point, bgColDefault));
+                    }
+                    
+                    return pixels[point];
+                }                
+            }
+        }
         
         abstract class Model
         {
-            public class Font
+            public class Font : Base
             {
                 private string name;
                 private Dimension dimension;
@@ -95,7 +131,7 @@ namespace IBlockScripts
 
             }
 
-            public class Bitmap
+            public class Bitmap : Base
             {
                 private Dimension dimension;
                 private List<Pixel> pixels = new List<Pixel>();
@@ -116,7 +152,7 @@ namespace IBlockScripts
                 }
             }
 
-            public class Pixel
+            public class Pixel : Base
             {
                 private char color;
                 private Point position;
@@ -143,7 +179,7 @@ namespace IBlockScripts
                 }
             }
 
-            public class Dimension
+            public class Dimension : Base
             {
                 public int width;
                 public int height;
@@ -154,13 +190,19 @@ namespace IBlockScripts
                     this.height = height;
                 }
             }
+
+            public class Base
+            {
+
+            }
         }
 
         abstract class Factory
         {
-            public class Bitmap
+            public class Bitmap : Base
             {
-                public Model.Bitmap fromString(string pattern, Model.Dimension dimension)
+
+                public Model.Bitmap fromSingleLine(string pattern, Model.Dimension dimension)
                 {
                     Model.Bitmap newBitmap = new Model.Bitmap(dimension);
                     pattern = resizePattern(pattern, newBitmap.getDimension().height * newBitmap.getDimension().width);
@@ -177,7 +219,12 @@ namespace IBlockScripts
 
                     return newBitmap;
                 }
-                
+
+                public override T getModel<T>()
+                {
+                    return new Model.Bitmap(new Model.Dimension(0,0)) as T;
+                }
+
                 private string resizePattern(string pattern, int newSize)
                 {
                     if(pattern.Length < newSize)
@@ -192,98 +239,164 @@ namespace IBlockScripts
                 }
             }
 
-            public class Font
+            public class Font : Base
             {
                 public Model.Font fromString(string definition)
                 {
                     Model.Font newFont = new Model.Font();
-                       
+                    Parser.Font fontParser = new Parser.Font(new Factory.Bitmap());
+                    string[] lines = definition.Split(new Char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+                    newFont = fontParser.parse<Model.Font>(lines, new Definition.Font(), new Factory.Font());
+                                              
                     return newFont;
                 }
 
-                private void renderBlock(string[] lines, Definition.Font fontDefinition, Bitmap bitmapFactory)
+                public override T getModel<T>()
                 {
-                    Model.Font newFont = new Model.Font();
-                    System.Text.RegularExpressions.MatchCollection matches;
-                    bool hasCloseTag = false;
-                    bool hasOpenTag = false;
-                    for(int i_lines = 0; (!hasCloseTag) && (i_lines < lines.Length); i_lines++)
-                    {
-                        string currentLine = lines[i_lines];
-                        if (fontDefinition.isCommentTag(currentLine))
-                        {
-                            // ignore, it's a comment
-                        } else if (fontDefinition.isOpenTag(currentLine))
-                        {
-                            bool hasOpenTahWidth = false;
-                            bool hasOpenTagHeight = false;
-                            bool hasOpenTagName = false;
-                            matches = fontDefinition.getMatchesOpenTag(currentLine);
-                            for(int i_matches = 0; i_matches < matches.Count; i_matches++)
-                            {
-                                System.Text.RegularExpressions.Match match = matches[i_matches];
-                                if(match.Groups["width"].Success)
-                                {
-                                    int w = 0;
-                                    if (Int32.TryParse(match.Groups["width"].Value, out w))
-                                    {
-                                        newFont.getDimension().width = w;
-                                        hasOpenTahWidth = true;
-                                    }                                   
-                                } else if (match.Groups["height"].Success)
-                                {
-                                    int h = 0;
-                                    if (Int32.TryParse(match.Groups["height"].Value, out h))
-                                    {
-                                        newFont.getDimension().height = h;
-                                        hasOpenTagHeight = true;
-                                    }
-                                }
-                                else if(match.Groups["name"].Success)
-                                {
-                                    newFont.setName(match.Groups["name"].Value);
-                                    hasOpenTagName = true;
-                                }
-                            }
-                            hasOpenTag = hasOpenTagHeight && hasOpenTahWidth && hasOpenTagName;
-                        } else if(hasOpenTag && fontDefinition.isLineTag(currentLine))
-                        {
-                            matches = fontDefinition.getMatchesLineTag(currentLine);
-                            bool hasNewGlyph = false;
-                            char glyph = ' ';
-                            Model.Bitmap glyphBitmap;
-                            for(int i_matches = 0; i_matches < matches.Count; i_matches++)
-                            {
-                                System.Text.RegularExpressions.Match match = matches[i_matches];
-                                if (match.Groups["char"].Success)
-                                {
-                                    if (char.TryParse(match.Groups["char"].Value, out glyph))
-                                    {
-                                        hasNewGlyph = true;                            
-                                    } else
-                                    {
-                                        hasNewGlyph = false;
-                                    }
-                                } else if (hasNewGlyph && match.Groups["pattern"].Success)
-                                {
-                                    glyphBitmap = bitmapFactory.fromString(match.Groups["pattern"].Value, newFont.getDimension());
-                                    newFont.addGlyph(glyph, glyphBitmap);
-                                    hasNewGlyph = false;
-                                }
-                            }
-                        } else if (hasOpenTag && fontDefinition.isCloseTag(currentLine))
-                        {
-                            hasCloseTag = true;
-                        } else {
+                    return new Model.Font() as T;
+                }
+            }
 
+            abstract public class Base
+            {
+                abstract public T getModel<T>() where T : Model.Base;
+            }
+        }
+
+        abstract class Parser
+        {
+                public class Font : Base
+                {
+                    private Factory.Bitmap bitmapFactory;
+                    
+                    public Font(Factory.Bitmap bitmapFactory)
+                    {
+                        this.bitmapFactory = bitmapFactory;
+                    }
+
+                    protected Factory.Bitmap getBitmapFactory()
+                    {
+                        return bitmapFactory;
+                    }
+
+                    public override void parseCloseTag<T>(ref T model, System.Text.RegularExpressions.MatchCollection matches)
+                    {
+                        
+                    }
+
+                    public override void parseCommentTag<T>(ref T model, System.Text.RegularExpressions.MatchCollection matches)
+                    {
+                        
+                    }
+
+                    public override void parseLineTag<T>(ref T model, System.Text.RegularExpressions.MatchCollection matches)
+                    {
+                        List<string> temp = new List<string>();
+                        char glyph = ' ';
+                        if (!(base.TryGetGroupValue(matches, "char", ref temp) && char.TryParse(temp.First(), out glyph)))
+                        {
+                            throw new ArgumentException("cant parse glyph");
+                        }
+                        temp.Clear();
+                        if (!base.TryGetGroupValue(matches, "pattern", ref temp))
+                        {
+                            throw new ArgumentException("cant parse pattern");
+                        } else
+                        {   
+                            Model.Bitmap bitmap = getBitmapFactory().fromSingleLine(temp.First(), (model as Model.Font).getDimension());
+                            (model as Model.Font).addGlyph(glyph, bitmap);
+                        }
+                    }
+
+                    public override void parseOpenTag<T>(ref T model, System.Text.RegularExpressions.MatchCollection matches)
+                    {
+                        List<string> widths = new List<string>();
+                        List<string> heights = new List<string>();
+                        List<string> names = new List<string>();
+                        if(base.TryGetGroupValue(matches, "width", ref widths) && base.TryGetGroupValue(matches, "height", ref heights) && base.TryGetGroupValue(matches, "name", ref names))
+                        {
+                            int width = 0;
+                            int height = 0;
+                            if(!(int.TryParse(widths.First(), out width) && int.TryParse(heights.First(), out height)))
+                            {
+                                throw new ArgumentException("can't parse dimensions");
+                            }
+                            (model as Model.Font).setName(names.First());
+                            (model as Model.Font).getDimension().height = height;
+                            (model as Model.Font).getDimension().width = width;
                         }
                     }
                 }
+
+                abstract public class Base
+                {
+                    public T parse<T>(string[] lines, Definition.Base definition, Factory.Base factory) where T : Model.Base
+                    {
+                        T model = factory.getModel<T>();
+
+                        bool hasOpenTag = false;
+                        bool hasCloseTag = false;
+                        for(int i = 0; !hasCloseTag && i < lines.Length; i++)
+                        {
+                            string line = lines[i];
+                            if (hasOpenTag && definition.isCommentTag(line))
+                            {
+                                parseCommentTag<T>(ref model, definition.getMatchesCommentTag(line));
+                            } else if (!hasOpenTag && definition.isOpenTag(line))
+                            {
+                                parseOpenTag<T>(ref model, definition.getMatchesOpenTag(line));
+                                hasOpenTag = true;
+                            } else if (hasOpenTag && definition.isLineTag(line))
+                            {
+                                parseLineTag<T>(ref model, definition.getMatchesLineTag(line));
+                            } else if (hasOpenTag && definition.isCloseTag(line))
+                            {
+                                parseCloseTag<T>(ref model, definition.getMatchesCloseTag(line));
+                                hasCloseTag = true;
+                            } else
+                            {
+                                throw new ArgumentException("unable to parse line "+i.ToString(), "string[] line");
+                            }
+                        }
+
+                        return (model as T);
+                    }
+                                       
+                    abstract public void parseOpenTag<T>(ref T model, System.Text.RegularExpressions.MatchCollection matches) where T : Model.Base;
+                    abstract public void parseLineTag<T>(ref T model, System.Text.RegularExpressions.MatchCollection matches) where T : Model.Base;
+                    abstract public void parseCloseTag<T>(ref T model, System.Text.RegularExpressions.MatchCollection matches) where T : Model.Base;
+                    abstract public void parseCommentTag<T>(ref T model, System.Text.RegularExpressions.MatchCollection matches) where T : Model.Base;
+
+                    public bool TryGetGroupValue(System.Text.RegularExpressions.MatchCollection matches, string name, ref List<string> values)
+                    {
+                        bool success = false;
+
+                        for(int i = 0; i < matches.Count; i++)
+                        {
+                            if (matches[i].Groups[name].Success)
+                            {
+                                values.Add(matches[i].Groups[name].Value);
+                                success = true;
+                            }
+                        }
+
+                        return success;                        
+                    }
             }
         }
 
         abstract class Definition
         {
+            public class Bitmap : Base
+            {
+                public Bitmap()
+                {
+                    this.openTag = new System.Text.RegularExpressions.Regex(@"^@BITMAP\s+(?<width>\d+)x(?<height>\d+)\s+(?<name>\S+)\s*$");
+                    this.lineTag = new System.Text.RegularExpressions.Regex(@"^(\d+)$");
+                    this.closeTag = new System.Text.RegularExpressions.Regex(@"^@ENDBITMAP$");
+                }
+            }
+
             public class Font : Base
             {
                 public Font()
