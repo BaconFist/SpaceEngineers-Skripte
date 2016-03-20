@@ -61,47 +61,53 @@ namespace IBlockScripts
 
                 public void lineTo( Model.Pixel point, Canvas canvas)
                 {
-                    int x, y, t, deltaX, deltaY, incrementX, incrementY, pdx, pdy, ddx, ddy, es, el, err;
-                    deltaX = point.getPosition().X - canvas.getPencil().X;
-                    deltaY = point.getPosition().Y - canvas.getPencil().Y;
-                    
-                    incrementX = Math.Sign(deltaX);
-                    incrementY = Math.Sign(deltaY);
-                    if (deltaX < 0) deltaX = -deltaX;
-                    if (deltaY < 0) deltaY = -deltaY;
+                    if (canvas.isLineInClippingArea(point.getPosition()))
+                    {
+                        int x, y, t, deltaX, deltaY, incrementX, incrementY, pdx, pdy, ddx, ddy, es, el, err;
+                        deltaX = point.getPosition().X - canvas.getPencil().X;
+                        deltaY = point.getPosition().Y - canvas.getPencil().Y;
 
-                    if (deltaX > deltaY)
-                    {
-                        pdx = incrementX; pdy = 0; 
-                        ddx = incrementX; ddy = incrementY; 
-                        es = deltaY; el = deltaX;
-                    }
-                    else
-                    {
-                        pdx = 0; pdy = incrementY; 
-                        ddx = incrementX; ddy = incrementY; 
-                        es = deltaX; el = deltaY;  
-                    }
-                    x = canvas.getPencil().X;
-                    y = canvas.getPencil().Y;
-                    err = el / 2;
-                    this.point(new Model.Pixel(new Point(x, y), point.getColor()), canvas);
-                   
-                    for (t = 0; t < el; ++t)
-                    {
-                        err -= es;
-                        if (err < 0)
+                        incrementX = Math.Sign(deltaX);
+                        incrementY = Math.Sign(deltaY);
+                        if (deltaX < 0) deltaX = -deltaX;
+                        if (deltaY < 0) deltaY = -deltaY;
+
+                        if (deltaX > deltaY)
                         {
-                            err += el;
-                            x += ddx;
-                            y += ddy;
+                            pdx = incrementX; pdy = 0;
+                            ddx = incrementX; ddy = incrementY;
+                            es = deltaY; el = deltaX;
                         }
                         else
                         {
-                            x += pdx;
-                            y += pdy;
+                            pdx = 0; pdy = incrementY;
+                            ddx = incrementX; ddy = incrementY;
+                            es = deltaX; el = deltaY;
                         }
+                        x = canvas.getPencil().X;
+                        y = canvas.getPencil().Y;
+                        err = el / 2;
                         this.point(new Model.Pixel(new Point(x, y), point.getColor()), canvas);
+
+                        for (t = 0; t < el; ++t)
+                        {
+                            err -= es;
+                            if (err < 0)
+                            {
+                                err += el;
+                                x += ddx;
+                                y += ddy;
+                            }
+                            else
+                            {
+                                x += pdx;
+                                y += pdy;
+                            }
+                            this.point(new Model.Pixel(new Point(x, y), point.getColor()), canvas);
+                        }
+                    } else
+                    {
+                        canvas.setPencil(point.getPosition());
                     }
                 }
 
@@ -136,7 +142,7 @@ namespace IBlockScripts
                 public bool setPixel(Model.Pixel Pixel)
                 {
                     bool isDrawed = false;
-                    if (isInClippingArea(Pixel.getPosition()))
+                    if (isPointInClippingArea(Pixel.getPosition()))
                     {
                         this.getPixel(Pixel.getPosition()).setColor(Pixel.getColor());
                         isDrawed = true;
@@ -176,9 +182,25 @@ namespace IBlockScripts
                     return pixels[point];
                 } 
                 
-                public bool isInClippingArea(Point point)
+                public bool isPointInClippingArea(Point point)
                 {
                     return 0 <= point.X && point.X < getDimensions().width && 0 <= point.Y && point.Y < getDimensions().height;
+                }
+
+                public bool isLineInClippingArea(Point point)
+                {
+                    int posA = getPointPosition(getPencil());
+                    int posB = getPointPosition(point);
+
+                    return (posA & posB) == 0;
+                }
+
+                private int getPointPosition(Point point)
+                {
+                    int valX = (point.X < 0) ? 1 : (point.X >= getDimensions().width) ? 2 : 0;
+                    int valY = (point.Y < 0) ? 8 : (point.Y >= getDimensions().height) ? 4 : 0;
+
+                    return valX + valY;
                 }
             }
         }
