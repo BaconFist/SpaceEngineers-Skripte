@@ -206,6 +206,73 @@ _ 0000000000000000000011111
 
             public Dotmatrix lineTo(Point point)
             {
+                gbham(cursor.X, cursor.Y, point.X, point.Y);
+                setCursor(point);
+
+                return this;
+            }
+
+            private void gbham(int xstart, int ystart, int xend, int yend)
+            {
+                int x, y, t, dx, dy, incx, incy, pdx, pdy, ddx, ddy, es, el, err;
+
+                /* Entfernung in beiden Dimensionen berechnen */
+                dx = xend - xstart;
+                dy = yend - ystart;
+
+                /* Vorzeichen des Inkrements bestimmen */
+                incx = Math.Sign(dx);
+                incy = Math.Sign(dy);
+                if (dx < 0) dx = -dx;
+                if (dy < 0) dy = -dy;
+
+                /* feststellen, welche Entfernung größer ist */
+                if (dx > dy)
+                {
+                    /* x ist schnelle Richtung */
+                    pdx = incx; pdy = 0;    /* pd. ist Parallelschritt */
+                    ddx = incx; ddy = incy; /* dd. ist Diagonalschritt */
+                    es = dy; el = dx;   /* Fehlerschritte schnell, langsam */
+                }
+                else
+                {
+                    /* y ist schnelle Richtung */
+                    pdx = 0; pdy = incy; /* pd. ist Parallelschritt */
+                    ddx = incx; ddy = incy; /* dd. ist Diagonalschritt */
+                    es = dx; el = dy;   /* Fehlerschritte schnell, langsam */
+                }
+
+                /* Initialisierungen vor Schleifenbeginn */
+                x = xstart;
+                y = ystart;
+                err = el / 2;
+                this.dot(new Point(x, y));
+
+                /* Pixel berechnen */
+                for (t = 0; t < el; ++t) /* t zaehlt die Pixel, el ist auch Anzahl */
+                {
+                    /* Aktualisierung Fehlerterm */
+                    err -= es;
+                    if (err < 0)
+                    {
+                        /* Fehlerterm wieder positiv (>=0) machen */
+                        err += el;
+                        /* Schritt in langsame Richtung, Diagonalschritt */
+                        x += ddx;
+                        y += ddy;
+                    }
+                    else
+                    {
+                        /* Schritt in schnelle Richtung, Parallelschritt */
+                        x += pdx;
+                        y += pdy;
+                    }
+                    this.dot(new Point(x, y));
+                }
+            } /* gbham() */
+
+            public Dotmatrix __lineTo(Point point)
+            {
                 Point origin = cursor;
                 Point target = point;
 
