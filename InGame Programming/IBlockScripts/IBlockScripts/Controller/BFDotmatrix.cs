@@ -39,17 +39,104 @@ namespace IBlockScripts
 
         abstract class Drawing
         {
+            public class Vector2D
+            {
+                public void point(Model.Pixel pixel, Canvas canvas)
+                {
+                    canvas.setPixel(pixel);
+                }
+
+                public void moveTo( Point point, Canvas canvas)
+                {
+                    canvas.setCursor(point);
+                }
+
+                public void lineTo( Model.Pixel destination, Canvas canvas)
+                {
+                    int x, y, t, deltaX, deltaY, incrementX, incrementY, pdx, pdy, ddx, ddy, es, el, err;
+                    deltaX = destination.getPosition().X - canvas.getCursor().X;
+                    deltaY = destination.getPosition().Y - canvas.getCursor().Y;
+                    
+                    incrementX = Math.Sign(deltaX);
+                    incrementY = Math.Sign(deltaY);
+                    if (deltaX < 0) deltaX = -deltaX;
+                    if (deltaY < 0) deltaY = -deltaY;
+
+                    if (deltaX > deltaY)
+                    {
+                        pdx = incrementX; pdy = 0; 
+                        ddx = incrementX; ddy = incrementY; 
+                        es = deltaY; el = deltaX;
+                    }
+                    else
+                    {
+                        pdx = 0; pdy = incrementY; 
+                        ddx = incrementX; ddy = incrementY; 
+                        es = deltaX; el = deltaY;  
+                    }
+                    x = canvas.getCursor().X;
+                    y = canvas.getCursor().Y;
+                    err = el / 2;
+                    point(new Model.Pixel(new Point(x,y), destination.getColor()), canvas);
+                   
+                    for (t = 0; t < el; ++t)
+                    {
+                        err -= es;
+                        if (err < 0)
+                        {
+                            err += el;
+                            x += ddx;
+                            y += ddy;
+                        }
+                        else
+                        {
+                            x += pdx;
+                            y += pdy;
+                        }
+                        point(new Model.Pixel(new Point(x, y), destination.getColor()), canvas);
+                    }
+                }
+            }
+
             public class Canvas
             {
                 private Dictionary<Point, Model.Pixel> pixels = new Dictionary<Point, Model.Pixel>();
                 private Model.Dimension dimensions;
                 private char bgColDefault;
+                private Point cursor;
                 
                 public Canvas(Model.Dimension dimensions, char backgroundColor)
                 {
                     this.dimensions = dimensions;
                     bgColDefault = backgroundColor;
+                    cursor = new Point(0, 0);
                 } 
+
+                public bool setPixel(Model.Pixel Pixel)
+                {
+                    if (isInClippingArea(Pixel.getPosition()))
+                    {
+                        this.getPixel(Pixel.getPosition()).setColor(Pixel.getColor());
+                        cursor = Pixel.getPosition();
+                    }
+                    
+                    return (cursor == Pixel.getPosition());
+                }
+
+                public Point getCursor()
+                {
+                    return cursor;
+                }
+
+                public bool setCursor(Point point)
+                {
+                    if (isInClippingArea(point))
+                    {
+                        cursor = point;
+                    }
+
+                    return cursor == point;
+                }
 
                 public Model.Dimension getDimensions()
                 {
@@ -69,7 +156,12 @@ namespace IBlockScripts
                     }
                     
                     return pixels[point];
-                }                
+                } 
+                
+                public bool isInClippingArea(Point point)
+                {
+                    return 0 <= point.X && point.X < getDimensions().width && 0 <= point.Y && point.Y < getDimensions().height;
+                }
             }
         }
         
