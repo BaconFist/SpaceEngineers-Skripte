@@ -122,13 +122,15 @@ namespace IBlockScripts
 
                 public bool setPixel(Model.Pixel Pixel)
                 {
+                    bool isDrawed = false;
                     if (isInClippingArea(Pixel.getPosition()))
                     {
                         this.getPixel(Pixel.getPosition()).setColor(Pixel.getColor());
-                        cursor = Pixel.getPosition();
+                        isDrawed = true;
                     }
-                    
-                    return (cursor == Pixel.getPosition());
+                    setCursor(Pixel.getPosition());
+
+                    return isDrawed;
                 }
 
                 public Point getCursor()
@@ -136,14 +138,9 @@ namespace IBlockScripts
                     return cursor;
                 }
 
-                public bool setCursor(Point point)
+                public void setCursor(Point point)
                 {
-                    if (isInClippingArea(point))
-                    {
-                        cursor = point;
-                    }
-
-                    return cursor == point;
+                    cursor = point;
                 }
 
                 public Model.Dimension getDimensions()
