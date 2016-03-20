@@ -51,6 +51,14 @@ namespace IBlockScripts
                     canvas.setCursor(point);
                 }
 
+                public void polygon(Model.Polygon polygon, Canvas canvas)
+                {
+                    for (int i = 0; i < polygon.getPixels().Count; i++)
+                    {
+                        lineTo(polygon.getPixel(i), canvas);
+                    }
+                }
+
                 public void lineTo( Model.Pixel point, Canvas canvas)
                 {
                     int x, y, t, deltaX, deltaY, incrementX, incrementY, pdx, pdy, ddx, ddy, es, el, err;
@@ -167,6 +175,31 @@ namespace IBlockScripts
         
         abstract class Model
         {
+            public class Polygon : Base
+            {
+                private List<Model.Pixel> pixels = new List<Pixel>();
+
+                public void addPixel(Pixel pixel)
+                {
+                    pixels.Add(pixel);
+                }
+
+                public List<Model.Pixel> getPixels()
+                {
+                    return pixels;
+                }
+
+                public Model.Pixel getPixel(int index)
+                {
+                    if (!(0 <= index && index < pixels.Count))
+                    {
+                        throw new IndexOutOfRangeException();
+                    }
+
+                    return pixels[index];
+                }
+            }
+
             public class Font : Base
             {
                 private string name;
