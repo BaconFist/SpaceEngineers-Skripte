@@ -104,6 +104,19 @@ namespace IBlockScripts
                         this.point(new Model.Pixel(new Point(x, y), point.getColor()), canvas);
                     }
                 }
+
+                public void bitmap(Model.Bitmap bitmap, Canvas canvas)
+                {
+                    multiPoint(bitmap.getPixels(), canvas);
+                }
+
+                public void multiPoint(List<Model.Pixel> pixels, Canvas canvas)
+                {
+                    for(int i = 0; i < pixels.Count; i++)
+                    {
+                        point(pixels[i], canvas);
+                    }
+                }
             }
 
             public class Canvas
