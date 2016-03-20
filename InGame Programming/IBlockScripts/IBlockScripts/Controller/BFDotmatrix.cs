@@ -48,7 +48,7 @@ namespace IBlockScripts
 
                 public void moveTo( Point point, Canvas canvas)
                 {
-                    canvas.setCursor(point);
+                    canvas.setPencil(point);
                 }
 
                 public void polygon(Model.Polygon polygon, Canvas canvas)
@@ -62,8 +62,8 @@ namespace IBlockScripts
                 public void lineTo( Model.Pixel point, Canvas canvas)
                 {
                     int x, y, t, deltaX, deltaY, incrementX, incrementY, pdx, pdy, ddx, ddy, es, el, err;
-                    deltaX = point.getPosition().X - canvas.getCursor().X;
-                    deltaY = point.getPosition().Y - canvas.getCursor().Y;
+                    deltaX = point.getPosition().X - canvas.getPencil().X;
+                    deltaY = point.getPosition().Y - canvas.getPencil().Y;
                     
                     incrementX = Math.Sign(deltaX);
                     incrementY = Math.Sign(deltaY);
@@ -82,8 +82,8 @@ namespace IBlockScripts
                         ddx = incrementX; ddy = incrementY; 
                         es = deltaX; el = deltaY;  
                     }
-                    x = canvas.getCursor().X;
-                    y = canvas.getCursor().Y;
+                    x = canvas.getPencil().X;
+                    y = canvas.getPencil().Y;
                     err = el / 2;
                     this.point(new Model.Pixel(new Point(x, y), point.getColor()), canvas);
                    
@@ -111,13 +111,13 @@ namespace IBlockScripts
                 private Dictionary<Point, Model.Pixel> pixels = new Dictionary<Point, Model.Pixel>();
                 private Model.Dimension dimensions;
                 private char bgColDefault;
-                private Point cursor;
+                private Point pencil;
                 
                 public Canvas(Model.Dimension dimensions, char backgroundColor)
                 {
                     this.dimensions = dimensions;
                     bgColDefault = backgroundColor;
-                    cursor = new Point(0, 0);
+                    pencil = new Point(0, 0);
                 } 
 
                 public bool setPixel(Model.Pixel Pixel)
@@ -128,19 +128,19 @@ namespace IBlockScripts
                         this.getPixel(Pixel.getPosition()).setColor(Pixel.getColor());
                         isDrawed = true;
                     }
-                    setCursor(Pixel.getPosition());
+                    setPencil(Pixel.getPosition());
 
                     return isDrawed;
                 }
 
-                public Point getCursor()
+                public Point getPencil()
                 {
-                    return cursor;
+                    return pencil;
                 }
 
-                public void setCursor(Point point)
+                public void setPencil(Point point)
                 {
-                    cursor = point;
+                    pencil = point;
                 }
 
                 public Model.Dimension getDimensions()
