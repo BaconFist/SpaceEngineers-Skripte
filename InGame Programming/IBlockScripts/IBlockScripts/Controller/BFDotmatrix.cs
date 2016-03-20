@@ -51,11 +51,11 @@ namespace IBlockScripts
                     canvas.setCursor(point);
                 }
 
-                public void lineTo( Model.Pixel destination, Canvas canvas)
+                public void lineTo( Model.Pixel point, Canvas canvas)
                 {
                     int x, y, t, deltaX, deltaY, incrementX, incrementY, pdx, pdy, ddx, ddy, es, el, err;
-                    deltaX = destination.getPosition().X - canvas.getCursor().X;
-                    deltaY = destination.getPosition().Y - canvas.getCursor().Y;
+                    deltaX = point.getPosition().X - canvas.getCursor().X;
+                    deltaY = point.getPosition().Y - canvas.getCursor().Y;
                     
                     incrementX = Math.Sign(deltaX);
                     incrementY = Math.Sign(deltaY);
@@ -77,7 +77,7 @@ namespace IBlockScripts
                     x = canvas.getCursor().X;
                     y = canvas.getCursor().Y;
                     err = el / 2;
-                    point(new Model.Pixel(new Point(x,y), destination.getColor()), canvas);
+                    this.point(new Model.Pixel(new Point(x, y), point.getColor()), canvas);
                    
                     for (t = 0; t < el; ++t)
                     {
@@ -93,7 +93,7 @@ namespace IBlockScripts
                             x += pdx;
                             y += pdy;
                         }
-                        point(new Model.Pixel(new Point(x, y), destination.getColor()), canvas);
+                        this.point(new Model.Pixel(new Point(x, y), point.getColor()), canvas);
                     }
                 }
             }
