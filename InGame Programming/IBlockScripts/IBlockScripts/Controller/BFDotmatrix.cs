@@ -116,6 +116,20 @@ namespace IBlockScripts
                     }
                 }
 
+                public void text(string text, Canvas canvas, Model.Font font)
+                {
+                    char[] chars = text.ToCharArray();
+                    Point pencilPos = canvas.getPencil().getPosition();
+                    for(int i = 0; i < chars.Length; i++)
+                    {
+                        if (i != 0)
+                        {
+                            moveTo(new Point((i * font.getDimension().width + pencilPos.X), pencilPos.Y), canvas);
+                        }                        
+                        bitmap(font.getGlyph(chars[i]), canvas);                        
+                    }
+                }
+
                 public void bitmap(Model.Bitmap bitmap, Canvas canvas)
                 {
                     multiPoint(bitmap.getPixels(), canvas, true);
