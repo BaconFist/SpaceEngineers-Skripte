@@ -41,22 +41,22 @@ namespace IBlockScripts
         {
             public class Vector2D
             {
-                public void color(char color, Canvas canvas)
+                public void color(char color, Model.Canvas canvas)
                 {
                     canvas.setColor(color);
                 }
 
-                public void point(Model.Pixel pixel, Canvas canvas)
+                public void point(Model.Pixel pixel, Model.Canvas canvas)
                 {
                     canvas.setPixel(pixel);
                 }
 
-                public void moveTo(Point point, Canvas canvas)
+                public void moveTo(Point point, Model.Canvas canvas)
                 {
                     canvas.getPencil().setPosition(point);
                 }
 
-                public void polygon(Model.Polygon polygon, Canvas canvas)
+                public void polygon(Model.Polygon polygon, Model.Canvas canvas)
                 {
                     for (int i = 0; i < polygon.getPixels().Count; i++)
                     {
@@ -64,7 +64,7 @@ namespace IBlockScripts
                     }
                 }
 
-                public void lineTo( Point point, Canvas canvas)
+                public void lineTo( Point point, Model.Canvas canvas)
                 {
                     if (canvas.isLineInClippingArea(point))
                     {
@@ -116,7 +116,7 @@ namespace IBlockScripts
                     }
                 }
 
-                public void text(string text, Canvas canvas, Model.Font font)
+                public void text(string text, Model.Canvas canvas, Model.Font font)
                 {
                     char[] chars = text.ToCharArray();
                     Point pencilPos = canvas.getPencil().getPosition();
@@ -130,12 +130,12 @@ namespace IBlockScripts
                     }
                 }
 
-                public void bitmap(Model.Bitmap bitmap, Canvas canvas)
+                public void bitmap(Model.Bitmap bitmap, Model.Canvas canvas)
                 {
                     multiPoint(bitmap.getPixels(), canvas, true);
                 }
 
-                public void multiPoint(List<Model.Pixel> pixels, Canvas canvas, bool relativePositions = false)
+                public void multiPoint(List<Model.Pixel> pixels, Model.Canvas canvas, bool relativePositions = false)
                 {
                     for(int i = 0; i < pixels.Count; i++)
                     {
@@ -144,7 +144,7 @@ namespace IBlockScripts
                     }
                 }
 
-                private void canvas(Canvas toDraw, Canvas canvas)
+                private void canvas(Model.Canvas toDraw, Model.Canvas canvas)
                 {
                     if (!toDraw.Equals(canvas))
                     {
@@ -152,7 +152,7 @@ namespace IBlockScripts
                     }                  
                 }
 
-                private Model.Pixel getAbsolutePixel(Model.Pixel pixel, Canvas canvas)
+                private Model.Pixel getAbsolutePixel(Model.Pixel pixel, Model.Canvas canvas)
                 {
                     int x = canvas.getPencil().getPosition().X + pixel.getPosition().X;
                     int y = canvas.getPencil().getPosition().Y + pixel.getPosition().Y;
@@ -161,20 +161,23 @@ namespace IBlockScripts
                     return pixel;
                 }
             }
-
-            public class Canvas
+        }
+        
+        abstract class Model
+        {
+            public class Canvas : Base
             {
                 private Dictionary<Point, Model.Pixel> pixels = new Dictionary<Point, Model.Pixel>();
                 private Model.Dimension dimensions;
                 private char bgColDefault;
                 private Model.Pixel pencil;
-                
+
                 public Canvas(Model.Dimension dimensions, char pencilColor, char backgroundColor)
                 {
                     this.dimensions = dimensions;
                     bgColDefault = backgroundColor;
                     pencil = new Model.Pixel(new Point(0, 0), pencilColor);
-                } 
+                }
 
                 public void setColor(char color)
                 {
@@ -192,7 +195,8 @@ namespace IBlockScripts
                     if (isPointInClippingArea(Pixel.getPosition()))
                     {
                         char color = Model.Color.get(Pixel.getColor());
-                        if (color != Model.Color.TRANSPARENT) {
+                        if (color != Model.Color.TRANSPARENT)
+                        {
                             this.getPixel(Pixel.getPosition()).setColor(color);
                             isDrawed = true;
                         }
@@ -220,7 +224,7 @@ namespace IBlockScripts
                 {
                     return dimensions;
                 }
-                
+
                 public bool hasPixel(Point point)
                 {
                     return pixels.ContainsKey(point);
@@ -232,10 +236,10 @@ namespace IBlockScripts
                     {
                         pixels.Add(point, new Model.Pixel(point, bgColDefault));
                     }
-                    
+
                     return pixels[point];
-                } 
-                
+                }
+
                 public bool isPointInClippingArea(Point point)
                 {
                     return 0 <= point.X && point.X < getDimensions().width && 0 <= point.Y && point.Y < getDimensions().height;
@@ -257,10 +261,8 @@ namespace IBlockScripts
                     return valX + valY;
                 }
             }
-        }
-        
-        abstract class Model
-        {
+
+
             public class Color : Base
             {
                 public const char TRANSPARENT = '0';
