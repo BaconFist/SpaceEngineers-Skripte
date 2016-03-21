@@ -34,6 +34,36 @@ namespace IBlockScripts
        */
         void Main(string args)
         {
+            Model.Canvas Canvas = new Model.Canvas(new Model.Dimension(30,30), Model.Color.GREEN, Model.Color.LIGHT_GRAY);
+            Drawing.Vector2D Vector = new Drawing.Vector2D();
+
+            Model.Polygon Polygon = new Model.Polygon();
+            Vector.moveTo(new Point(0,20), Canvas);
+            Vector.lineTo(new Point(0,10), Canvas);
+            Vector.lineTo(new Point(10,10), Canvas);
+            Vector.lineTo(new Point(10,20), Canvas);
+            Vector.lineTo(new Point(0,10), Canvas);
+            Vector.lineTo(new Point(5,0), Canvas);
+            Vector.lineTo(new Point(10,10), Canvas);
+            Vector.lineTo(new Point(0,20), Canvas);
+            Vector.lineTo(new Point(10,20), Canvas);
+
+            char[][] ws = Canvas.getWorkspace();
+
+            List<IMyTerminalBlock> lcd = new List<IMyTerminalBlock>();
+            GridTerminalSystem.GetBlocksOfType<IMyTextPanel>(lcd, (x => x.CustomName.Contains(args)));
+            if(lcd.Count > 0)
+            {
+                StringBuilder sb = new StringBuilder();
+                for(int y = 0; y < ws.Length; y++)
+                {
+                    sb.AppendLine(new String(ws[y]));
+                }
+                for(int i = 0; i < lcd.Count; i++)
+                {
+                    (lcd[i] as IMyTextPanel).WritePublicText(sb.ToString());
+                }
+            }
 
         }
 
@@ -92,7 +122,7 @@ namespace IBlockScripts
                         x = Canvas.getPencil().getPosition().X;
                         y = Canvas.getPencil().getPosition().Y;
                         err = el / 2;
-                        this.point(new Model.Pixel(new Point(x, y), '1'), Canvas);
+                        this.point(new Model.Pixel(new Point(x, y), Canvas.getColor()), Canvas);
 
                         for (t = 0; t < el; ++t)
                         {
@@ -108,7 +138,7 @@ namespace IBlockScripts
                                 x += pdx;
                                 y += pdy;
                             }
-                            this.point(new Model.Pixel(new Point(x, y), '1'), Canvas);
+                            this.point(new Model.Pixel(new Point(x, y), Canvas.getColor()), Canvas);
                         }
                     } else
                     {
@@ -168,6 +198,7 @@ namespace IBlockScripts
             public class Canvas : Base
             {
                 private Dictionary<Point, Pixel> Pixels = new Dictionary<Point, Pixel>();
+                private char[][] workspace; // [Y][X]
                 private Dimension Dimension;
                 private char defaultBackgroundColor;
                 private Pixel Pencil;
@@ -177,6 +208,29 @@ namespace IBlockScripts
                     this.Dimension = Dimension;
                     this.defaultBackgroundColor = defaultBackgroundColor;
                     Pencil = new Pixel(new Point(0, 0), pencilColor);
+                    createWorkspace(Dimension.width, Dimension.height, defaultBackgroundColor);
+                }
+
+                public char[][] getWorkspace()
+                {
+                    return workspace;
+                }
+
+                private void createWorkspace(int width, int height, char color)
+                {
+                    workspace = new Char[height][];
+                    for(int i = 0; i < workspace.Length; i++)
+                    {
+                        workspace[i] = (new String(color, width)).ToCharArray();
+                    }
+                }
+
+                private void updateWorkspace(int x, int y, char color)
+                {
+                    if(workspace.Length > y && workspace[y].Length > x) 
+                    {
+                        workspace[y][x] = color;
+                    }
                 }
 
                 public void setColor(char color)
@@ -189,25 +243,29 @@ namespace IBlockScripts
                     return getPencil().getColor();
                 }
 
-                public bool setPixel(Pixel Pixel)
+                public void setPixel(Pixel Pixel)
                 {
-                    bool isDrawed = false;
-                    if (isPointInClippingArea(Pixel.getPosition()))
+                    char color = Color.get(Pixel.getColor());
+                    if (color == Color.TRANSPARENT)
                     {
-                        char color = Color.get(Pixel.getColor());
-                        if (color != Color.TRANSPARENT)
+                        if (hasPixelAt(Pixel.getPosition()))
                         {
-                            this.getPixelAt(Pixel.getPosition()).setColor(color);
-                            isDrawed = true;
+                            Pixels.Remove(Pixel.getPosition());
                         }
+                    } else
+                    {
+                        this.getPixelAt(Pixel.getPosition()).setColor(color);
                     }
-                    setPencil(Pixel);
+                    updateWorkspace(Pixel.getPosition().X, Pixel.getPosition().Y, color);
 
-                    return isDrawed;
+                    setPencil(Pixel);
                 }
+
                 public List<Pixel> getPixelList()
                 {
-                    return Pixels.Values.ToList();
+                    List<Pixel> Values = new List<Pixel>();
+                    Values.AddRange(Pixels.Values);
+                    return Values;
                 }
 
                 public Pixel getPencil()
@@ -238,11 +296,6 @@ namespace IBlockScripts
                     }
 
                     return Pixels[Point];
-                }
-
-                public bool isPointInClippingArea(Point Point)
-                {
-                    return 0 <= Point.X && Point.X < getDimensions().width && 0 <= Point.Y && Point.Y < getDimensions().height;
                 }
 
                 public bool isLineInClippingArea(Point Point)
@@ -335,7 +388,7 @@ namespace IBlockScripts
                 {
                     if (!(0 <= index && index < Pixels.Count))
                     {
-                        throw new IndexOutOfRangeException();
+                        return null;
                     }
 
                     return Pixels[index];
@@ -389,7 +442,7 @@ namespace IBlockScripts
                 {
                     if (!hasGlyph(glyph))
                     {
-                        throw new IndexOutOfRangeException();
+                        return null;
                     } else
                     {
                         return Glyphs[glyph];  
@@ -565,7 +618,7 @@ namespace IBlockScripts
                     {
                         List<string> CharValues = new List<string>();
                         char glyph = ' ';
-                        if (!(base.TryGetGroupValues(Matches, "char", ref CharValues) && char.TryParse(CharValues.First(), out glyph)))
+                        if (!(base.TryGetGroupValues(Matches, "char", ref CharValues) && char.TryParse(CharValues[0], out glyph)))
                         {
                             throw new ArgumentException("cant parse glyph");
                         }
@@ -575,7 +628,7 @@ namespace IBlockScripts
                             throw new ArgumentException("cant parse pattern");
                         } else
                         {   
-                            Model.Bitmap GlyphBitmap = getBitmapFactory().fromSingleLine(PattenValues.First(), (Model as Model.Font).getDimension());
+                            Model.Bitmap GlyphBitmap = getBitmapFactory().fromSingleLine(PattenValues[0], (Model as Model.Font).getDimension());
                             (Model as Model.Font).addGlyph(glyph, GlyphBitmap);
                         }
                     }
@@ -589,11 +642,11 @@ namespace IBlockScripts
                         {
                             int width = 0;
                             int height = 0;
-                            if(!(int.TryParse(WidthValues.First(), out width) && int.TryParse(HeightValues.First(), out height)))
+                            if(!(int.TryParse(WidthValues[0], out width) && int.TryParse(HeightValues[0], out height)))
                             {
                                 throw new ArgumentException("can't parse dimensions");
                             }
-                            (Model as Model.Font).setName(NameValues.First());
+                            (Model as Model.Font).setName(NameValues[0]);
                             (Model as Model.Font).getDimension().height = height;
                             (Model as Model.Font).getDimension().width = width;
                         }
