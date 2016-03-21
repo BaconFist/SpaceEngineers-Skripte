@@ -41,31 +41,36 @@ namespace IBlockScripts
         {
             public class Vector2D
             {
+                public void color(char color, Canvas canvas)
+                {
+                    canvas.setColor(color);
+                }
+
                 public void point(Model.Pixel pixel, Canvas canvas)
                 {
                     canvas.setPixel(pixel);
                 }
 
-                public void moveTo( Point point, Canvas canvas)
+                public void moveTo(Point point, Canvas canvas)
                 {
-                    canvas.setPencil(point);
+                    canvas.getPencil().setPosition(point);
                 }
 
                 public void polygon(Model.Polygon polygon, Canvas canvas)
                 {
                     for (int i = 0; i < polygon.getPixels().Count; i++)
                     {
-                        lineTo(polygon.getPixel(i), canvas);
+                        lineTo(polygon.getPixel(i).getPosition(), canvas);
                     }
                 }
 
-                public void lineTo( Model.Pixel point, Canvas canvas)
+                public void lineTo( Point point, Canvas canvas)
                 {
-                    if (canvas.isLineInClippingArea(point.getPosition()))
+                    if (canvas.isLineInClippingArea(point))
                     {
                         int x, y, t, deltaX, deltaY, incrementX, incrementY, pdx, pdy, ddx, ddy, es, el, err;
-                        deltaX = point.getPosition().X - canvas.getPencil().X;
-                        deltaY = point.getPosition().Y - canvas.getPencil().Y;
+                        deltaX = point.X - canvas.getPencil().getPosition().X;
+                        deltaY = point.Y - canvas.getPencil().getPosition().Y;
 
                         incrementX = Math.Sign(deltaX);
                         incrementY = Math.Sign(deltaY);
@@ -84,10 +89,10 @@ namespace IBlockScripts
                             ddx = incrementX; ddy = incrementY;
                             es = deltaX; el = deltaY;
                         }
-                        x = canvas.getPencil().X;
-                        y = canvas.getPencil().Y;
+                        x = canvas.getPencil().getPosition().X;
+                        y = canvas.getPencil().getPosition().Y;
                         err = el / 2;
-                        this.point(new Model.Pixel(new Point(x, y), point.getColor()), canvas);
+                        this.point(new Model.Pixel(new Point(x, y), '1'), canvas);
 
                         for (t = 0; t < el; ++t)
                         {
@@ -103,11 +108,11 @@ namespace IBlockScripts
                                 x += pdx;
                                 y += pdy;
                             }
-                            this.point(new Model.Pixel(new Point(x, y), point.getColor()), canvas);
+                            this.point(new Model.Pixel(new Point(x, y), '1'), canvas);
                         }
                     } else
                     {
-                        canvas.setPencil(point.getPosition());
+                        moveTo(point, canvas);
                     }
                 }
 
@@ -127,8 +132,8 @@ namespace IBlockScripts
 
                 private Model.Pixel getAbsolutePixel(Model.Pixel pixel, Canvas canvas)
                 {
-                    int x = canvas.getPencil().X + pixel.getPosition().X;
-                    int y = canvas.getPencil().Y + pixel.getPosition().Y;
+                    int x = canvas.getPencil().getPosition().X + pixel.getPosition().X;
+                    int y = canvas.getPencil().getPosition().Y + pixel.getPosition().Y;
                     pixel.setPosition(new Point(x,y));
 
                     return pixel;
@@ -140,34 +145,47 @@ namespace IBlockScripts
                 private Dictionary<Point, Model.Pixel> pixels = new Dictionary<Point, Model.Pixel>();
                 private Model.Dimension dimensions;
                 private char bgColDefault;
-                private Point pencil;
+                private Model.Pixel pencil;
                 
-                public Canvas(Model.Dimension dimensions, char backgroundColor)
+                public Canvas(Model.Dimension dimensions, char pencilColor, char backgroundColor)
                 {
                     this.dimensions = dimensions;
                     bgColDefault = backgroundColor;
-                    pencil = new Point(0, 0);
+                    pencil = new Model.Pixel(new Point(0, 0), pencilColor);
                 } 
+
+                public void setColor(char color)
+                {
+                    getPencil().setColor(color);
+                }
+
+                public char getColor()
+                {
+                    return getPencil().getColor();
+                }
 
                 public bool setPixel(Model.Pixel Pixel)
                 {
                     bool isDrawed = false;
                     if (isPointInClippingArea(Pixel.getPosition()))
                     {
-                        this.getPixel(Pixel.getPosition()).setColor(Pixel.getColor());
-                        isDrawed = true;
+                        char color = Model.Color.get(Pixel.getColor());
+                        if (color != Model.Color.TRANSPARENT) {
+                            this.getPixel(Pixel.getPosition()).setColor(color);
+                            isDrawed = true;
+                        }
                     }
-                    setPencil(Pixel.getPosition());
+                    setPencil(Pixel);
 
                     return isDrawed;
                 }
 
-                public Point getPencil()
+                public Model.Pixel getPencil()
                 {
                     return pencil;
                 }
 
-                public void setPencil(Point point)
+                public void setPencil(Model.Pixel point)
                 {
                     pencil = point;
                 }
@@ -199,7 +217,7 @@ namespace IBlockScripts
 
                 public bool isLineInClippingArea(Point point)
                 {
-                    int posA = getPointPosition(getPencil());
+                    int posA = getPointPosition(getPencil().getPosition());
                     int posB = getPointPosition(point);
 
                     return (posA & posB) == 0;
@@ -219,6 +237,8 @@ namespace IBlockScripts
         {
             public class Color : Base
             {
+                public const char TRANSPARENT = '0';
+                public const char PENCIL = '1';
                 public const char GREEN = '\uE001';
                 public const char BLUE = '\uE002';
                 public const char RED = '\uE003';
@@ -249,6 +269,8 @@ namespace IBlockScripts
                     map.Add('M', MEDIUM_GRAY);
                     map.Add('d', DARK_GRAY);
                     map.Add('D', DARK_GRAY);
+                    map.Add('0', TRANSPARENT);
+                    map.Add('1', PENCIL);
                 }
 
                 static private Color getInstance()
@@ -435,7 +457,7 @@ namespace IBlockScripts
                         char[] row = pattern.Substring(start, count).ToCharArray();
                         for(int x = 0; x < row.Length; x++)
                         {
-                            newBitmap.getPixels().Add(new Model.Pixel(new Point(x,y), Model.Color.get(row[x])));
+                            newBitmap.getPixels().Add(new Model.Pixel(new Point(x,y), row[x]));
                         }
                     }    
 
