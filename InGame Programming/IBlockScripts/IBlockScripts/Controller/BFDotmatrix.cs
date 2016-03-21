@@ -41,36 +41,36 @@ namespace IBlockScripts
         {
             public class Vector2D
             {
-                public void color(char color, Model.Canvas canvas)
+                public void color(char color, Model.Canvas Canvas)
                 {
-                    canvas.setColor(color);
+                    Canvas.setColor(color);
                 }
 
-                public void point(Model.Pixel pixel, Model.Canvas canvas)
+                public void point(Model.Pixel Pixel, Model.Canvas Canvas)
                 {
-                    canvas.setPixel(pixel);
+                    Canvas.setPixel(Pixel);
                 }
 
-                public void moveTo(Point point, Model.Canvas canvas)
+                public void moveTo(Point Point, Model.Canvas Canvas)
                 {
-                    canvas.getPencil().setPosition(point);
+                    Canvas.getPencil().setPosition(Point);
                 }
 
-                public void polygon(Model.Polygon polygon, Model.Canvas canvas)
+                public void polygon(Model.Polygon Polygon, Model.Canvas Canvas)
                 {
-                    for (int i = 0; i < polygon.getPixels().Count; i++)
+                    for (int i = 0; i < Polygon.getPixels().Count; i++)
                     {
-                        lineTo(polygon.getPixel(i).getPosition(), canvas);
+                        lineTo(Polygon.getPixel(i).getPosition(), Canvas);
                     }
                 }
 
-                public void lineTo( Point point, Model.Canvas canvas)
+                public void lineTo( Point Point, Model.Canvas Canvas)
                 {
-                    if (canvas.isLineInClippingArea(point))
+                    if (Canvas.isLineInClippingArea(Point))
                     {
                         int x, y, t, deltaX, deltaY, incrementX, incrementY, pdx, pdy, ddx, ddy, es, el, err;
-                        deltaX = point.X - canvas.getPencil().getPosition().X;
-                        deltaY = point.Y - canvas.getPencil().getPosition().Y;
+                        deltaX = Point.X - Canvas.getPencil().getPosition().X;
+                        deltaY = Point.Y - Canvas.getPencil().getPosition().Y;
 
                         incrementX = Math.Sign(deltaX);
                         incrementY = Math.Sign(deltaY);
@@ -89,10 +89,10 @@ namespace IBlockScripts
                             ddx = incrementX; ddy = incrementY;
                             es = deltaX; el = deltaY;
                         }
-                        x = canvas.getPencil().getPosition().X;
-                        y = canvas.getPencil().getPosition().Y;
+                        x = Canvas.getPencil().getPosition().X;
+                        y = Canvas.getPencil().getPosition().Y;
                         err = el / 2;
-                        this.point(new Model.Pixel(new Point(x, y), '1'), canvas);
+                        this.point(new Model.Pixel(new Point(x, y), '1'), Canvas);
 
                         for (t = 0; t < el; ++t)
                         {
@@ -108,57 +108,57 @@ namespace IBlockScripts
                                 x += pdx;
                                 y += pdy;
                             }
-                            this.point(new Model.Pixel(new Point(x, y), '1'), canvas);
+                            this.point(new Model.Pixel(new Point(x, y), '1'), Canvas);
                         }
                     } else
                     {
-                        moveTo(point, canvas);
+                        moveTo(Point, Canvas);
                     }
                 }
 
-                public void text(string text, Model.Canvas canvas, Model.Font font)
+                public void text(string text, Model.Canvas Canvas, Model.Font Font)
                 {
                     char[] chars = text.ToCharArray();
-                    Point pencilPos = canvas.getPencil().getPosition();
+                    Point PencilPos = Canvas.getPencil().getPosition();
                     for(int i = 0; i < chars.Length; i++)
                     {
                         if (i != 0)
                         {
-                            moveTo(new Point((i * font.getDimension().width + pencilPos.X), pencilPos.Y), canvas);
+                            moveTo(new Point((i * Font.getDimension().width + PencilPos.X), PencilPos.Y), Canvas);
                         }                        
-                        bitmap(font.getGlyph(chars[i]), canvas);                        
+                        bitmap(Font.getGlyph(chars[i]), Canvas);                        
                     }
                 }
 
-                public void bitmap(Model.Bitmap bitmap, Model.Canvas canvas)
+                public void bitmap(Model.Bitmap Bitmap, Model.Canvas Canvas)
                 {
-                    multiPoint(bitmap.getPixels(), canvas, true);
+                    multiPoint(Bitmap.getPixels(), Canvas, true);
                 }
 
-                public void multiPoint(List<Model.Pixel> pixels, Model.Canvas canvas, bool relativePositions = false)
+                public void multiPoint(List<Model.Pixel> Pixels, Model.Canvas Canvas, bool relativePositions = false)
                 {
-                    for(int i = 0; i < pixels.Count; i++)
+                    for(int i = 0; i < Pixels.Count; i++)
                     {
-                        Model.Pixel pixel = (relativePositions)?getAbsolutePixel(pixels[i], canvas): pixels[i];
-                        point(pixel, canvas);
+                        Model.Pixel pixel = (relativePositions)?getAbsolutePixel(Pixels[i], Canvas): Pixels[i];
+                        point(pixel, Canvas);
                     }
                 }
 
-                private void canvas(Model.Canvas toDraw, Model.Canvas canvas)
+                private void canvas(Model.Canvas ToDraw, Model.Canvas Canvas)
                 {
-                    if (!toDraw.Equals(canvas))
+                    if (!ToDraw.Equals(Canvas))
                     {
-                        multiPoint(toDraw.getPixelList(), canvas, true);
+                        multiPoint(ToDraw.getPixelList(), Canvas, true);
                     }                  
                 }
 
-                private Model.Pixel getAbsolutePixel(Model.Pixel pixel, Model.Canvas canvas)
+                private Model.Pixel getAbsolutePixel(Model.Pixel Pixel, Model.Canvas Canvas)
                 {
-                    int x = canvas.getPencil().getPosition().X + pixel.getPosition().X;
-                    int y = canvas.getPencil().getPosition().Y + pixel.getPosition().Y;
-                    pixel.setPosition(new Point(x,y));
+                    int x = Canvas.getPencil().getPosition().X + Pixel.getPosition().X;
+                    int y = Canvas.getPencil().getPosition().Y + Pixel.getPosition().Y;
+                    Pixel.setPosition(new Point(x,y));
 
-                    return pixel;
+                    return Pixel;
                 }
             }
         }
@@ -167,16 +167,16 @@ namespace IBlockScripts
         {
             public class Canvas : Base
             {
-                private Dictionary<Point, Model.Pixel> pixels = new Dictionary<Point, Model.Pixel>();
-                private Model.Dimension dimensions;
+                private Dictionary<Point, Pixel> Pixels = new Dictionary<Point, Pixel>();
+                private Dimension Dimension;
                 private char bgColDefault;
-                private Model.Pixel pencil;
+                private Pixel Pencil;
 
-                public Canvas(Model.Dimension dimensions, char pencilColor, char backgroundColor)
+                public Canvas(Dimension Dimension, char pencilColor, char backgroundColor)
                 {
-                    this.dimensions = dimensions;
+                    this.Dimension = Dimension;
                     bgColDefault = backgroundColor;
-                    pencil = new Model.Pixel(new Point(0, 0), pencilColor);
+                    Pencil = new Pixel(new Point(0, 0), pencilColor);
                 }
 
                 public void setColor(char color)
@@ -189,13 +189,13 @@ namespace IBlockScripts
                     return getPencil().getColor();
                 }
 
-                public bool setPixel(Model.Pixel Pixel)
+                public bool setPixel(Pixel Pixel)
                 {
                     bool isDrawed = false;
                     if (isPointInClippingArea(Pixel.getPosition()))
                     {
-                        char color = Model.Color.get(Pixel.getColor());
-                        if (color != Model.Color.TRANSPARENT)
+                        char color = Color.get(Pixel.getColor());
+                        if (color != Color.TRANSPARENT)
                         {
                             this.getPixel(Pixel.getPosition()).setColor(color);
                             isDrawed = true;
@@ -205,58 +205,58 @@ namespace IBlockScripts
 
                     return isDrawed;
                 }
-                public List<Model.Pixel> getPixelList()
+                public List<Pixel> getPixelList()
                 {
-                    return pixels.Values.ToList<Model.Pixel>();
+                    return Pixels.Values.ToList();
                 }
 
-                public Model.Pixel getPencil()
+                public Pixel getPencil()
                 {
-                    return pencil;
+                    return Pencil;
                 }
 
-                public void setPencil(Model.Pixel point)
+                public void setPencil(Pixel Point)
                 {
-                    pencil = point;
+                    Pencil = Point;
                 }
 
-                public Model.Dimension getDimensions()
+                public Dimension getDimensions()
                 {
-                    return dimensions;
+                    return Dimension;
                 }
 
-                public bool hasPixel(Point point)
+                public bool hasPixel(Point Point)
                 {
-                    return pixels.ContainsKey(point);
+                    return Pixels.ContainsKey(Point);
                 }
 
-                public Model.Pixel getPixel(Point point)
+                public Pixel getPixel(Point Point)
                 {
-                    if (!hasPixel(point))
+                    if (!hasPixel(Point))
                     {
-                        pixels.Add(point, new Model.Pixel(point, bgColDefault));
+                        Pixels.Add(Point, new Pixel(Point, bgColDefault));
                     }
 
-                    return pixels[point];
+                    return Pixels[Point];
                 }
 
-                public bool isPointInClippingArea(Point point)
+                public bool isPointInClippingArea(Point Point)
                 {
-                    return 0 <= point.X && point.X < getDimensions().width && 0 <= point.Y && point.Y < getDimensions().height;
+                    return 0 <= Point.X && Point.X < getDimensions().width && 0 <= Point.Y && Point.Y < getDimensions().height;
                 }
 
-                public bool isLineInClippingArea(Point point)
+                public bool isLineInClippingArea(Point Point)
                 {
                     int posA = getPointPosition(getPencil().getPosition());
-                    int posB = getPointPosition(point);
+                    int posB = getPointPosition(Point);
 
                     return (posA & posB) == 0;
                 }
 
-                private int getPointPosition(Point point)
+                private int getPointPosition(Point Point)
                 {
-                    int valX = (point.X < 0) ? 1 : (point.X >= getDimensions().width) ? 2 : 0;
-                    int valY = (point.Y < 0) ? 8 : (point.Y >= getDimensions().height) ? 4 : 0;
+                    int valX = (Point.X < 0) ? 1 : (Point.X >= getDimensions().width) ? 2 : 0;
+                    int valY = (Point.Y < 0) ? 8 : (Point.Y >= getDimensions().height) ? 4 : 0;
 
                     return valX + valY;
                 }
@@ -276,86 +276,86 @@ namespace IBlockScripts
                 public const char MEDIUM_GRAY = '\uE00D';
                 public const char DARK_GRAY = '\uE00F';
 
-                private Dictionary<char, char> map = new Dictionary<char, char>();
-                static private Color instance;
+                private Dictionary<char, char> Map = new Dictionary<char, char>();
+                static private Color Instance;
 
                 public Color()
                 {
-                    map.Add('g', GREEN);
-                    map.Add('G', GREEN);
-                    map.Add('b', BLUE);
-                    map.Add('B', BLUE);
-                    map.Add('r', RED);
-                    map.Add('R', RED);
-                    map.Add('y', YELLOW);
-                    map.Add('Y', YELLOW);
-                    map.Add('w', WHITE);
-                    map.Add('W', WHITE);
-                    map.Add('l', LIGHT_GRAY);
-                    map.Add('L', LIGHT_GRAY);
-                    map.Add('m', MEDIUM_GRAY);
-                    map.Add('M', MEDIUM_GRAY);
-                    map.Add('d', DARK_GRAY);
-                    map.Add('D', DARK_GRAY);
-                    map.Add('0', TRANSPARENT);
-                    map.Add('1', PENCIL);
+                    Map.Add('g', GREEN);
+                    Map.Add('G', GREEN);
+                    Map.Add('b', BLUE);
+                    Map.Add('B', BLUE);
+                    Map.Add('r', RED);
+                    Map.Add('R', RED);
+                    Map.Add('y', YELLOW);
+                    Map.Add('Y', YELLOW);
+                    Map.Add('w', WHITE);
+                    Map.Add('W', WHITE);
+                    Map.Add('l', LIGHT_GRAY);
+                    Map.Add('L', LIGHT_GRAY);
+                    Map.Add('m', MEDIUM_GRAY);
+                    Map.Add('M', MEDIUM_GRAY);
+                    Map.Add('d', DARK_GRAY);
+                    Map.Add('D', DARK_GRAY);
+                    Map.Add('0', TRANSPARENT);
+                    Map.Add('1', PENCIL);
                 }
 
                 static private Color getInstance()
                 {
-                    if((Color.instance == null) || !(Color.instance is Color)){
-                        Color.instance = new Color();
+                    if((Color.Instance == null) || !(Color.Instance is Color)){
+                        Color.Instance = new Color();
                     }
 
-                    return Color.instance;
+                    return Color.Instance;
                 }
 
                 static public char get(char key)
                 {
-                    Color color = Color.getInstance();
-                    return color.map.ContainsKey(key) ? color.map[key] : key;
+                    Color Color = Color.getInstance();
+                    return Color.Map.ContainsKey(key) ? Color.Map[key] : key;
                 }
             }
 
             public class Polygon : Base
             {
-                private List<Model.Pixel> pixels = new List<Pixel>();
+                private List<Model.Pixel> Pixels = new List<Pixel>();
 
                 public void addPixel(Pixel pixel)
                 {
-                    pixels.Add(pixel);
+                    Pixels.Add(pixel);
                 }
 
                 public List<Model.Pixel> getPixels()
                 {
-                    return pixels;
+                    return Pixels;
                 }
 
                 public Model.Pixel getPixel(int index)
                 {
-                    if (!(0 <= index && index < pixels.Count))
+                    if (!(0 <= index && index < Pixels.Count))
                     {
                         throw new IndexOutOfRangeException();
                     }
 
-                    return pixels[index];
+                    return Pixels[index];
                 }
             }
 
             public class Font : Base
             {
                 private string name;
-                private Dimension dimension;
+                private Dimension Dimension;
                 private Dictionary<char, Model.Bitmap> Glyphs = new Dictionary<char, Bitmap>();
 
                 public Font()
                 {
-                    dimension = new Dimension(0,0);
+                    Dimension = new Dimension(0,0);
                 }
 
                 public Dimension getDimension()
                 {
-                    return dimension;
+                    return Dimension;
                 }
 
                 public string getName()
@@ -368,11 +368,11 @@ namespace IBlockScripts
                     this.name = name;
                 }
 
-                public bool addGlyph(char glyph, Model.Bitmap bitmap)
+                public bool addGlyph(char glyph, Model.Bitmap Bitmap)
                 {
                     if (!hasGlyph(glyph))
                     {
-                        Glyphs.Add(glyph, bitmap);
+                        Glyphs.Add(glyph, Bitmap);
                         return hasGlyph(glyph);
                     } else
                     {
@@ -400,33 +400,33 @@ namespace IBlockScripts
 
             public class Bitmap : Base
             {
-                private Dimension dimension;
-                private List<Pixel> pixels = new List<Pixel>();
+                private Dimension Dimension;
+                private List<Pixel> Pixels = new List<Pixel>();
 
-                public Bitmap(Dimension dimension)
+                public Bitmap(Dimension Dimension)
                 {
-                    this.dimension = dimension;
+                    this.Dimension = Dimension;
                 }
 
                 public List<Pixel> getPixels()
                 {
-                    return this.pixels;
+                    return this.Pixels;
                 }
 
                 public Dimension getDimension()
                 {
-                    return this.dimension;
+                    return this.Dimension;
                 }
             }
 
             public class Pixel : Base
             {
                 private char color;
-                private Point position;
+                private Point Position;
 
-                public Pixel(Point position, char color)
+                public Pixel(Point Position, char color)
                 {
-                    this.position = position;
+                    this.Position = Position;
                     this.color = color;
                 }
 
@@ -437,12 +437,12 @@ namespace IBlockScripts
 
                 public Point getPosition()
                 {
-                    return this.position;
+                    return this.Position;
                 }
 
-                public void setPosition(Point point)
+                public void setPosition(Point Point)
                 {
-                    position = point;
+                    Position = Point;
                 }
 
                 public char getColor()
@@ -474,22 +474,22 @@ namespace IBlockScripts
             public class Bitmap : Base
             {
 
-                public Model.Bitmap fromSingleLine(string pattern, Model.Dimension dimension)
+                public Model.Bitmap fromSingleLine(string pattern, Model.Dimension Dimension)
                 {
-                    Model.Bitmap newBitmap = new Model.Bitmap(dimension);
-                    pattern = resizePattern(pattern, newBitmap.getDimension().height * newBitmap.getDimension().width);
-                    int count = newBitmap.getDimension().width;
-                    for(int y = 0; y < newBitmap.getDimension().height; y++)
+                    Model.Bitmap Bitmap = new Model.Bitmap(Dimension);
+                    pattern = resizePattern(pattern, Bitmap.getDimension().height * Bitmap.getDimension().width);
+                    int count = Bitmap.getDimension().width;
+                    for(int y = 0; y < Bitmap.getDimension().height; y++)
                     {
-                        int start = y * newBitmap.getDimension().width;
+                        int start = y * Bitmap.getDimension().width;
                         char[] row = pattern.Substring(start, count).ToCharArray();
                         for(int x = 0; x < row.Length; x++)
                         {
-                            newBitmap.getPixels().Add(new Model.Pixel(new Point(x,y), row[x]));
+                            Bitmap.getPixels().Add(new Model.Pixel(new Point(x,y), row[x]));
                         }
                     }    
 
-                    return newBitmap;
+                    return Bitmap;
                 }
 
                 public override T getModel<T>()
@@ -515,12 +515,12 @@ namespace IBlockScripts
             {
                 public Model.Font fromString(string definition)
                 {
-                    Model.Font newFont = new Model.Font();
-                    Parser.Font fontParser = new Parser.Font(new Factory.Bitmap());
+                    Model.Font Font = new Model.Font();
+                    Parser.Font FontParser = new Parser.Font(new Factory.Bitmap());
                     string[] lines = definition.Split(new Char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
-                    newFont = fontParser.parse<Model.Font>(lines, new Definition.Font(), new Factory.Font());
+                    Font = FontParser.parse<Model.Font>(lines, new Definition.Font(), new Factory.Font());
                                               
-                    return newFont;
+                    return Font;
                 }
 
                 public override T getModel<T>()
@@ -539,53 +539,53 @@ namespace IBlockScripts
         {
                 public class Font : Base
                 {
-                    private Factory.Bitmap bitmapFactory;
+                    private Factory.Bitmap BitmapFactory;
                     
-                    public Font(Factory.Bitmap bitmapFactory)
+                    public Font(Factory.Bitmap BitmapFactory)
                     {
-                        this.bitmapFactory = bitmapFactory;
+                        this.BitmapFactory = BitmapFactory;
                     }
 
                     protected Factory.Bitmap getBitmapFactory()
                     {
-                        return bitmapFactory;
+                        return BitmapFactory;
                     }
 
-                    public override void parseCloseTag<T>(ref T model, System.Text.RegularExpressions.MatchCollection matches)
+                    public override void parseCloseTag<T>(ref T Model, System.Text.RegularExpressions.MatchCollection Matches)
                     {
                         
                     }
 
-                    public override void parseCommentTag<T>(ref T model, System.Text.RegularExpressions.MatchCollection matches)
+                    public override void parseCommentTag<T>(ref T Model, System.Text.RegularExpressions.MatchCollection Matches)
                     {
                         
                     }
 
-                    public override void parseLineTag<T>(ref T model, System.Text.RegularExpressions.MatchCollection matches)
+                    public override void parseLineTag<T>(ref T Model, System.Text.RegularExpressions.MatchCollection Matches)
                     {
                         List<string> temp = new List<string>();
                         char glyph = ' ';
-                        if (!(base.TryGetGroupValue(matches, "char", ref temp) && char.TryParse(temp.First(), out glyph)))
+                        if (!(base.TryGetGroupValue(Matches, "char", ref temp) && char.TryParse(temp.First(), out glyph)))
                         {
                             throw new ArgumentException("cant parse glyph");
                         }
                         temp.Clear();
-                        if (!base.TryGetGroupValue(matches, "pattern", ref temp))
+                        if (!base.TryGetGroupValue(Matches, "pattern", ref temp))
                         {
                             throw new ArgumentException("cant parse pattern");
                         } else
                         {   
-                            Model.Bitmap bitmap = getBitmapFactory().fromSingleLine(temp.First(), (model as Model.Font).getDimension());
-                            (model as Model.Font).addGlyph(glyph, bitmap);
+                            Model.Bitmap Bitmap = getBitmapFactory().fromSingleLine(temp.First(), (Model as Model.Font).getDimension());
+                            (Model as Model.Font).addGlyph(glyph, Bitmap);
                         }
                     }
 
-                    public override void parseOpenTag<T>(ref T model, System.Text.RegularExpressions.MatchCollection matches)
+                    public override void parseOpenTag<T>(ref T Model, System.Text.RegularExpressions.MatchCollection Matches)
                     {
                         List<string> widths = new List<string>();
                         List<string> heights = new List<string>();
                         List<string> names = new List<string>();
-                        if(base.TryGetGroupValue(matches, "width", ref widths) && base.TryGetGroupValue(matches, "height", ref heights) && base.TryGetGroupValue(matches, "name", ref names))
+                        if(base.TryGetGroupValue(Matches, "width", ref widths) && base.TryGetGroupValue(Matches, "height", ref heights) && base.TryGetGroupValue(Matches, "name", ref names))
                         {
                             int width = 0;
                             int height = 0;
@@ -593,37 +593,37 @@ namespace IBlockScripts
                             {
                                 throw new ArgumentException("can't parse dimensions");
                             }
-                            (model as Model.Font).setName(names.First());
-                            (model as Model.Font).getDimension().height = height;
-                            (model as Model.Font).getDimension().width = width;
+                            (Model as Model.Font).setName(names.First());
+                            (Model as Model.Font).getDimension().height = height;
+                            (Model as Model.Font).getDimension().width = width;
                         }
                     }
                 }
 
                 abstract public class Base
                 {
-                    public T parse<T>(string[] lines, Definition.Base definition, Factory.Base factory) where T : Model.Base
+                    public T parse<T>(string[] lines, Definition.Base Definition, Factory.Base Factory) where T : Model.Base
                     {
-                        T model = factory.getModel<T>();
+                        T Model = Factory.getModel<T>();
 
                         bool hasOpenTag = false;
                         bool hasCloseTag = false;
                         for(int i = 0; !hasCloseTag && i < lines.Length; i++)
                         {
                             string line = lines[i];
-                            if (hasOpenTag && definition.isCommentTag(line))
+                            if (hasOpenTag && Definition.isCommentTag(line))
                             {
-                                parseCommentTag<T>(ref model, definition.getMatchesCommentTag(line));
-                            } else if (!hasOpenTag && definition.isOpenTag(line))
+                                parseCommentTag<T>(ref Model, Definition.getMatchesCommentTag(line));
+                            } else if (!hasOpenTag && Definition.isOpenTag(line))
                             {
-                                parseOpenTag<T>(ref model, definition.getMatchesOpenTag(line));
+                                parseOpenTag<T>(ref Model, Definition.getMatchesOpenTag(line));
                                 hasOpenTag = true;
-                            } else if (hasOpenTag && definition.isLineTag(line))
+                            } else if (hasOpenTag && Definition.isLineTag(line))
                             {
-                                parseLineTag<T>(ref model, definition.getMatchesLineTag(line));
-                            } else if (hasOpenTag && definition.isCloseTag(line))
+                                parseLineTag<T>(ref Model, Definition.getMatchesLineTag(line));
+                            } else if (hasOpenTag && Definition.isCloseTag(line))
                             {
-                                parseCloseTag<T>(ref model, definition.getMatchesCloseTag(line));
+                                parseCloseTag<T>(ref Model, Definition.getMatchesCloseTag(line));
                                 hasCloseTag = true;
                             } else
                             {
@@ -631,7 +631,7 @@ namespace IBlockScripts
                             }
                         }
 
-                        return (model as T);
+                        return (Model as T);
                     }
                                        
                     abstract public void parseOpenTag<T>(ref T model, System.Text.RegularExpressions.MatchCollection matches) where T : Model.Base;
@@ -639,15 +639,15 @@ namespace IBlockScripts
                     abstract public void parseCloseTag<T>(ref T model, System.Text.RegularExpressions.MatchCollection matches) where T : Model.Base;
                     abstract public void parseCommentTag<T>(ref T model, System.Text.RegularExpressions.MatchCollection matches) where T : Model.Base;
 
-                    public bool TryGetGroupValue(System.Text.RegularExpressions.MatchCollection matches, string name, ref List<string> values)
+                    public bool TryGetGroupValue(System.Text.RegularExpressions.MatchCollection Matches, string name, ref List<string> Values)
                     {
                         bool success = false;
 
-                        for(int i = 0; i < matches.Count; i++)
+                        for(int i = 0; i < Matches.Count; i++)
                         {
-                            if (matches[i].Groups[name].Success)
+                            if (Matches[i].Groups[name].Success)
                             {
-                                values.Add(matches[i].Groups[name].Value);
+                                Values.Add(Matches[i].Groups[name].Value);
                                 success = true;
                             }
                         }
@@ -663,9 +663,9 @@ namespace IBlockScripts
             {
                 public Bitmap()
                 {
-                    this.openTag = new System.Text.RegularExpressions.Regex(@"^@BITMAP\s+(?<width>\d+)x(?<height>\d+)\s+(?<name>\S+)\s*$");
-                    this.lineTag = new System.Text.RegularExpressions.Regex(@"^(\d+)$");
-                    this.closeTag = new System.Text.RegularExpressions.Regex(@"^@ENDBITMAP$");
+                    this.OpenTag = new System.Text.RegularExpressions.Regex(@"^@BITMAP\s+(?<width>\d+)x(?<height>\d+)\s+(?<name>\S+)\s*$");
+                    this.LineTag = new System.Text.RegularExpressions.Regex(@"^(\d+)$");
+                    this.CloseTag = new System.Text.RegularExpressions.Regex(@"^@ENDBITMAP$");
                 }
             }
 
@@ -673,57 +673,57 @@ namespace IBlockScripts
             {
                 public Font()
                 {
-                    this.openTag = new System.Text.RegularExpressions.Regex(@"^@FONT\s+(?<width>\d+)x(?<height>\d+)\s+(?<name>\S+)\s*$");
-                    this.lineTag = new System.Text.RegularExpressions.Regex(@"^(?<char>\S)\s(?<pattern>[01]+)$");
-                    this.closeTag = new System.Text.RegularExpressions.Regex(@"^@ENDFONT$");
+                    this.OpenTag = new System.Text.RegularExpressions.Regex(@"^@FONT\s+(?<width>\d+)x(?<height>\d+)\s+(?<name>\S+)\s*$");
+                    this.LineTag = new System.Text.RegularExpressions.Regex(@"^(?<char>\S)\s(?<pattern>[01]+)$");
+                    this.CloseTag = new System.Text.RegularExpressions.Regex(@"^@ENDFONT$");
                 }
             }
 
             abstract public class Base
             {
-                protected System.Text.RegularExpressions.Regex openTag = new System.Text.RegularExpressions.Regex(@".*");
-                protected System.Text.RegularExpressions.Regex lineTag = new System.Text.RegularExpressions.Regex(@".*");
-                protected System.Text.RegularExpressions.Regex closeTag = new System.Text.RegularExpressions.Regex(@".*");
-                protected System.Text.RegularExpressions.Regex commentTag = new System.Text.RegularExpressions.Regex(@"//.*");
+                protected System.Text.RegularExpressions.Regex OpenTag = new System.Text.RegularExpressions.Regex(@".*");
+                protected System.Text.RegularExpressions.Regex LineTag = new System.Text.RegularExpressions.Regex(@".*");
+                protected System.Text.RegularExpressions.Regex CloseTag = new System.Text.RegularExpressions.Regex(@".*");
+                protected System.Text.RegularExpressions.Regex CommentTag = new System.Text.RegularExpressions.Regex(@"//.*");
 
                 public bool isOpenTag(string line)
                 {
-                    return this.openTag.IsMatch(line);
+                    return this.OpenTag.IsMatch(line);
                 }
 
                 public bool isLineTag(string line)
                 {
-                    return this.lineTag.IsMatch(line);
+                    return this.LineTag.IsMatch(line);
                 }
 
                 public bool isCloseTag(string line)
                 {
-                    return this.lineTag.IsMatch(line);
+                    return this.LineTag.IsMatch(line);
                 }
 
                 public bool isCommentTag(string line)
                 {
-                    return this.commentTag.IsMatch(line);
+                    return this.CommentTag.IsMatch(line);
                 }
 
                 public System.Text.RegularExpressions.MatchCollection getMatchesOpenTag(string line)
                 {
-                    return this.openTag.Matches(line);
+                    return this.OpenTag.Matches(line);
                 }
 
                 public System.Text.RegularExpressions.MatchCollection getMatchesLineTag(string line)
                 {
-                    return this.lineTag.Matches(line);
+                    return this.LineTag.Matches(line);
                 }
 
                 public System.Text.RegularExpressions.MatchCollection getMatchesCloseTag(string line)
                 {
-                    return this.closeTag.Matches(line);
+                    return this.CloseTag.Matches(line);
                 }
 
                 public System.Text.RegularExpressions.MatchCollection getMatchesCommentTag(string line)
                 {
-                    return this.commentTag.Matches(line);
+                    return this.CommentTag.Matches(line);
                 }
             }
         }
