@@ -296,7 +296,7 @@ namespace IBlockScripts
             {
                 private string name;
                 private Dimension dimension;
-                private Dictionary<char, MonoBitmap> Glyphs = new Dictionary<char, MonoBitmap>();
+                private Dictionary<char, Model.Bitmap> Glyphs = new Dictionary<char, Bitmap>();
 
                 public Font()
                 {
@@ -318,7 +318,7 @@ namespace IBlockScripts
                     this.name = name;
                 }
 
-                public bool addGlyph(char glyph, MonoBitmap bitmap)
+                public bool addGlyph(char glyph, Model.Bitmap bitmap)
                 {
                     if (!hasGlyph(glyph))
                     {
@@ -348,22 +348,6 @@ namespace IBlockScripts
 
             }
 
-            public class MonoBitmap : Bitmap
-            {
-                public MonoBitmap(Dimension dimension) : base(dimension)
-                {
-                    
-                }   
-                
-                public Pixel getPixel(int index, char color)
-                {
-                    Pixel px = base.getPixel(index);
-                    px.setColor(color);
-
-                    return px;
-                }                 
-            }
-
             public class Bitmap : Base
             {
                 private Dimension dimension;
@@ -372,11 +356,6 @@ namespace IBlockScripts
                 public Bitmap(Dimension dimension)
                 {
                     this.dimension = dimension;
-                }
-
-                public Pixel getPixel(int index)
-                {
-                    return pixels[index];
                 }
 
                 public List<Pixel> getPixels()
@@ -547,7 +526,7 @@ namespace IBlockScripts
                         } else
                         {   
                             Model.Bitmap bitmap = getBitmapFactory().fromSingleLine(temp.First(), (model as Model.Font).getDimension());
-                            (model as Model.Font).addGlyph(glyph, bitmap as Model.MonoBitmap);
+                            (model as Model.Font).addGlyph(glyph, bitmap);
                         }
                     }
 
