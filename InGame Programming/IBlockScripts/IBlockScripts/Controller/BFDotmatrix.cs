@@ -113,15 +113,25 @@ namespace IBlockScripts
 
                 public void bitmap(Model.Bitmap bitmap, Canvas canvas)
                 {
-                    multiPoint(bitmap.getPixels(), canvas);
+                    multiPoint(bitmap.getPixels(), canvas, true);
                 }
 
-                public void multiPoint(List<Model.Pixel> pixels, Canvas canvas)
+                public void multiPoint(List<Model.Pixel> pixels, Canvas canvas, bool relativePositions = false)
                 {
                     for(int i = 0; i < pixels.Count; i++)
                     {
-                        point(pixels[i], canvas);
+                        Model.Pixel pixel = (relativePositions)?getAbsolutePixel(pixels[i], canvas): pixels[i];
+                        point(pixel, canvas);
                     }
+                }
+
+                private Model.Pixel getAbsolutePixel(Model.Pixel pixel, Canvas canvas)
+                {
+                    int x = canvas.getPencil().X + pixel.getPosition().X;
+                    int y = canvas.getPencil().Y + pixel.getPosition().Y;
+                    pixel.setPosition(new Point(x,y));
+
+                    return pixel;
                 }
             }
 
@@ -328,6 +338,11 @@ namespace IBlockScripts
                 public Point getPosition()
                 {
                     return this.position;
+                }
+
+                public void setPosition(Point point)
+                {
+                    position = point;
                 }
 
                 public char getColor()
