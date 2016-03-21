@@ -80,7 +80,6 @@
     <Compile Include="Controller\BlockActionProxy.cs" />
     <Compile Include="Controller\OnPlayerRange.cs" />
     <Compile Include="Controller\ProximityDisplay.cs" />
-    <Compile Include="Controller\RADAR1.cs" />
     <Compile Include="Controller\SimpleEvents.cs" />
     <Compile Include="Controller\SolarLightSwitch.cs" />
     <Compile Include="Controller\StargateModDHDAdressChanger.cs" />
