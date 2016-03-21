@@ -144,6 +144,14 @@ namespace IBlockScripts
                     }
                 }
 
+                private void canvas(Canvas toDraw, Canvas canvas)
+                {
+                    if (!toDraw.Equals(canvas))
+                    {
+                        multiPoint(toDraw.getPixelList(), canvas, true);
+                    }                  
+                }
+
                 private Model.Pixel getAbsolutePixel(Model.Pixel pixel, Canvas canvas)
                 {
                     int x = canvas.getPencil().getPosition().X + pixel.getPosition().X;
@@ -192,6 +200,10 @@ namespace IBlockScripts
                     setPencil(Pixel);
 
                     return isDrawed;
+                }
+                public List<Model.Pixel> getPixelList()
+                {
+                    return pixels.Values.ToList<Model.Pixel>();
                 }
 
                 public Model.Pixel getPencil()
