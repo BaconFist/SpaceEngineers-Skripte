@@ -119,12 +119,12 @@ namespace IBlockScripts
                 public void text(string text, Model.Canvas Canvas, Model.Font Font)
                 {
                     char[] chars = text.ToCharArray();
-                    Point PencilPos = Canvas.getPencil().getPosition();
+                    Point PencilStartPosition = Canvas.getPencil().getPosition();
                     for(int i = 0; i < chars.Length; i++)
                     {
                         if (i != 0)
                         {
-                            moveTo(new Point((i * Font.getDimension().width + PencilPos.X), PencilPos.Y), Canvas);
+                            moveTo(new Point((i * Font.getDimension().width + PencilStartPosition.X), PencilStartPosition.Y), Canvas);
                         }                        
                         bitmap(Font.getGlyph(chars[i]), Canvas);                        
                     }
@@ -169,13 +169,13 @@ namespace IBlockScripts
             {
                 private Dictionary<Point, Pixel> Pixels = new Dictionary<Point, Pixel>();
                 private Dimension Dimension;
-                private char bgColDefault;
+                private char defaultBackgroundColor;
                 private Pixel Pencil;
 
-                public Canvas(Dimension Dimension, char pencilColor, char backgroundColor)
+                public Canvas(Dimension Dimension, char pencilColor, char defaultBackgroundColor)
                 {
                     this.Dimension = Dimension;
-                    bgColDefault = backgroundColor;
+                    this.defaultBackgroundColor = defaultBackgroundColor;
                     Pencil = new Pixel(new Point(0, 0), pencilColor);
                 }
 
@@ -197,7 +197,7 @@ namespace IBlockScripts
                         char color = Color.get(Pixel.getColor());
                         if (color != Color.TRANSPARENT)
                         {
-                            this.getPixel(Pixel.getPosition()).setColor(color);
+                            this.getPixelAt(Pixel.getPosition()).setColor(color);
                             isDrawed = true;
                         }
                     }
@@ -215,9 +215,9 @@ namespace IBlockScripts
                     return Pencil;
                 }
 
-                public void setPencil(Pixel Point)
+                public void setPencil(Pixel Pencil)
                 {
-                    Pencil = Point;
+                    this.Pencil = Pencil;
                 }
 
                 public Dimension getDimensions()
@@ -225,16 +225,16 @@ namespace IBlockScripts
                     return Dimension;
                 }
 
-                public bool hasPixel(Point Point)
+                public bool hasPixelAt(Point Point)
                 {
                     return Pixels.ContainsKey(Point);
                 }
 
-                public Pixel getPixel(Point Point)
+                public Pixel getPixelAt(Point Point)
                 {
-                    if (!hasPixel(Point))
+                    if (!hasPixelAt(Point))
                     {
-                        Pixels.Add(Point, new Pixel(Point, bgColDefault));
+                        Pixels.Add(Point, new Pixel(Point, defaultBackgroundColor));
                     }
 
                     return Pixels[Point];
@@ -247,18 +247,18 @@ namespace IBlockScripts
 
                 public bool isLineInClippingArea(Point Point)
                 {
-                    int posA = getPointPosition(getPencil().getPosition());
-                    int posB = getPointPosition(Point);
+                    int clippingAreaCodePencil = getClippingAreaCode(getPencil().getPosition());
+                    int clippingAreaCodePoint = getClippingAreaCode(Point);
 
-                    return (posA & posB) == 0;
+                    return (clippingAreaCodePencil & clippingAreaCodePoint) == 0;
                 }
 
-                private int getPointPosition(Point Point)
+                private int getClippingAreaCode(Point Point)
                 {
-                    int valX = (Point.X < 0) ? 1 : (Point.X >= getDimensions().width) ? 2 : 0;
-                    int valY = (Point.Y < 0) ? 8 : (Point.Y >= getDimensions().height) ? 4 : 0;
+                    int clippingCodeXAxis = (Point.X < 0) ? 1 : (Point.X >= getDimensions().width) ? 2 : 0;
+                    int clippingCodeYAxis = (Point.Y < 0) ? 8 : (Point.Y >= getDimensions().height) ? 4 : 0;
 
-                    return valX + valY;
+                    return clippingCodeXAxis + clippingCodeYAxis;
                 }
             }
 
@@ -276,29 +276,29 @@ namespace IBlockScripts
                 public const char MEDIUM_GRAY = '\uE00D';
                 public const char DARK_GRAY = '\uE00F';
 
-                private Dictionary<char, char> Map = new Dictionary<char, char>();
+                private Dictionary<char, char> ColorMap = new Dictionary<char, char>();
                 static private Color Instance;
 
                 public Color()
                 {
-                    Map.Add('g', GREEN);
-                    Map.Add('G', GREEN);
-                    Map.Add('b', BLUE);
-                    Map.Add('B', BLUE);
-                    Map.Add('r', RED);
-                    Map.Add('R', RED);
-                    Map.Add('y', YELLOW);
-                    Map.Add('Y', YELLOW);
-                    Map.Add('w', WHITE);
-                    Map.Add('W', WHITE);
-                    Map.Add('l', LIGHT_GRAY);
-                    Map.Add('L', LIGHT_GRAY);
-                    Map.Add('m', MEDIUM_GRAY);
-                    Map.Add('M', MEDIUM_GRAY);
-                    Map.Add('d', DARK_GRAY);
-                    Map.Add('D', DARK_GRAY);
-                    Map.Add('0', TRANSPARENT);
-                    Map.Add('1', PENCIL);
+                    ColorMap.Add('g', GREEN);
+                    ColorMap.Add('G', GREEN);
+                    ColorMap.Add('b', BLUE);
+                    ColorMap.Add('B', BLUE);
+                    ColorMap.Add('r', RED);
+                    ColorMap.Add('R', RED);
+                    ColorMap.Add('y', YELLOW);
+                    ColorMap.Add('Y', YELLOW);
+                    ColorMap.Add('w', WHITE);
+                    ColorMap.Add('W', WHITE);
+                    ColorMap.Add('l', LIGHT_GRAY);
+                    ColorMap.Add('L', LIGHT_GRAY);
+                    ColorMap.Add('m', MEDIUM_GRAY);
+                    ColorMap.Add('M', MEDIUM_GRAY);
+                    ColorMap.Add('d', DARK_GRAY);
+                    ColorMap.Add('D', DARK_GRAY);
+                    ColorMap.Add('0', TRANSPARENT);
+                    ColorMap.Add('1', PENCIL);
                 }
 
                 static private Color getInstance()
@@ -310,10 +310,10 @@ namespace IBlockScripts
                     return Color.Instance;
                 }
 
-                static public char get(char key)
+                static public char get(char colorUid)
                 {
                     Color Color = Color.getInstance();
-                    return Color.Map.ContainsKey(key) ? Color.Map[key] : key;
+                    return Color.ColorMap.ContainsKey(colorUid) ? Color.ColorMap[colorUid] : colorUid;
                 }
             }
 
@@ -440,9 +440,9 @@ namespace IBlockScripts
                     return this.Position;
                 }
 
-                public void setPosition(Point Point)
+                public void setPosition(Point Position)
                 {
-                    Position = Point;
+                    this.Position = Position;
                 }
 
                 public char getColor()
@@ -477,12 +477,12 @@ namespace IBlockScripts
                 public Model.Bitmap fromSingleLine(string pattern, Model.Dimension Dimension)
                 {
                     Model.Bitmap Bitmap = new Model.Bitmap(Dimension);
-                    pattern = resizePattern(pattern, Bitmap.getDimension().height * Bitmap.getDimension().width);
-                    int count = Bitmap.getDimension().width;
+                    pattern = clipPattern(pattern, Bitmap.getDimension().height * Bitmap.getDimension().width);
+                    int subPartLength = Bitmap.getDimension().width;
                     for(int y = 0; y < Bitmap.getDimension().height; y++)
                     {
                         int start = y * Bitmap.getDimension().width;
-                        char[] row = pattern.Substring(start, count).ToCharArray();
+                        char[] row = pattern.Substring(start, subPartLength).ToCharArray();
                         for(int x = 0; x < row.Length; x++)
                         {
                             Bitmap.getPixels().Add(new Model.Pixel(new Point(x,y), row[x]));
@@ -497,14 +497,14 @@ namespace IBlockScripts
                     return new Model.Bitmap(new Model.Dimension(0,0)) as T;
                 }
 
-                private string resizePattern(string pattern, int newSize)
+                private string clipPattern(string pattern, int mustSize)
                 {
-                    if(pattern.Length < newSize)
+                    if(pattern.Length < mustSize)
                     {
-                        pattern = pattern + new String('0', newSize-pattern.Length);
-                    } else if(newSize < pattern.Length)
+                        pattern = pattern + new String('0', mustSize-pattern.Length);
+                    } else if(mustSize < pattern.Length)
                     {
-                        pattern = pattern.Substring(0, newSize);
+                        pattern = pattern.Substring(0, mustSize);
                     }
 
                     return pattern;
@@ -513,12 +513,12 @@ namespace IBlockScripts
 
             public class Font : Base
             {
-                public Model.Font fromString(string definition)
+                public Model.Font fromString(string fontConfiguration)
                 {
                     Model.Font Font = new Model.Font();
                     Parser.Font FontParser = new Parser.Font(new Factory.Bitmap());
-                    string[] lines = definition.Split(new Char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
-                    Font = FontParser.parse<Model.Font>(lines, new Definition.Font(), new Factory.Font());
+                    string[] lines = fontConfiguration.Split(new Char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+                    Font = FontParser.parse<Model.Font>(lines, new ParserDefinition.Font(), new Factory.Font());
                                               
                     return Font;
                 }
@@ -563,37 +563,37 @@ namespace IBlockScripts
 
                     public override void parseLineTag<T>(ref T Model, System.Text.RegularExpressions.MatchCollection Matches)
                     {
-                        List<string> temp = new List<string>();
+                        List<string> CharValues = new List<string>();
                         char glyph = ' ';
-                        if (!(base.TryGetGroupValue(Matches, "char", ref temp) && char.TryParse(temp.First(), out glyph)))
+                        if (!(base.TryGetGroupValues(Matches, "char", ref CharValues) && char.TryParse(CharValues.First(), out glyph)))
                         {
                             throw new ArgumentException("cant parse glyph");
                         }
-                        temp.Clear();
-                        if (!base.TryGetGroupValue(Matches, "pattern", ref temp))
+                        List<string> PattenValues = new List<string>();
+                        if (!base.TryGetGroupValues(Matches, "pattern", ref PattenValues))
                         {
                             throw new ArgumentException("cant parse pattern");
                         } else
                         {   
-                            Model.Bitmap Bitmap = getBitmapFactory().fromSingleLine(temp.First(), (Model as Model.Font).getDimension());
-                            (Model as Model.Font).addGlyph(glyph, Bitmap);
+                            Model.Bitmap GlyphBitmap = getBitmapFactory().fromSingleLine(PattenValues.First(), (Model as Model.Font).getDimension());
+                            (Model as Model.Font).addGlyph(glyph, GlyphBitmap);
                         }
                     }
 
                     public override void parseOpenTag<T>(ref T Model, System.Text.RegularExpressions.MatchCollection Matches)
                     {
-                        List<string> widths = new List<string>();
-                        List<string> heights = new List<string>();
-                        List<string> names = new List<string>();
-                        if(base.TryGetGroupValue(Matches, "width", ref widths) && base.TryGetGroupValue(Matches, "height", ref heights) && base.TryGetGroupValue(Matches, "name", ref names))
+                        List<string> WidthValues = new List<string>();
+                        List<string> HeightValues = new List<string>();
+                        List<string> NameValues = new List<string>();
+                        if(base.TryGetGroupValues(Matches, "width", ref WidthValues) && base.TryGetGroupValues(Matches, "height", ref HeightValues) && base.TryGetGroupValues(Matches, "name", ref NameValues))
                         {
                             int width = 0;
                             int height = 0;
-                            if(!(int.TryParse(widths.First(), out width) && int.TryParse(heights.First(), out height)))
+                            if(!(int.TryParse(WidthValues.First(), out width) && int.TryParse(HeightValues.First(), out height)))
                             {
                                 throw new ArgumentException("can't parse dimensions");
                             }
-                            (Model as Model.Font).setName(names.First());
+                            (Model as Model.Font).setName(NameValues.First());
                             (Model as Model.Font).getDimension().height = height;
                             (Model as Model.Font).getDimension().width = width;
                         }
@@ -602,7 +602,7 @@ namespace IBlockScripts
 
                 abstract public class Base
                 {
-                    public T parse<T>(string[] lines, Definition.Base Definition, Factory.Base Factory) where T : Model.Base
+                    public T parse<T>(string[] lines, ParserDefinition.Base ParserDefinition, Factory.Base Factory) where T : Model.Base
                     {
                         T Model = Factory.getModel<T>();
 
@@ -611,19 +611,19 @@ namespace IBlockScripts
                         for(int i = 0; !hasCloseTag && i < lines.Length; i++)
                         {
                             string line = lines[i];
-                            if (hasOpenTag && Definition.isCommentTag(line))
+                            if (hasOpenTag && ParserDefinition.isCommentTag(line))
                             {
-                                parseCommentTag<T>(ref Model, Definition.getMatchesCommentTag(line));
-                            } else if (!hasOpenTag && Definition.isOpenTag(line))
+                                parseCommentTag<T>(ref Model, ParserDefinition.getMatchesCommentTag(line));
+                            } else if (!hasOpenTag && ParserDefinition.isOpenTag(line))
                             {
-                                parseOpenTag<T>(ref Model, Definition.getMatchesOpenTag(line));
+                                parseOpenTag<T>(ref Model, ParserDefinition.getMatchesOpenTag(line));
                                 hasOpenTag = true;
-                            } else if (hasOpenTag && Definition.isLineTag(line))
+                            } else if (hasOpenTag && ParserDefinition.isLineTag(line))
                             {
-                                parseLineTag<T>(ref Model, Definition.getMatchesLineTag(line));
-                            } else if (hasOpenTag && Definition.isCloseTag(line))
+                                parseLineTag<T>(ref Model, ParserDefinition.getMatchesLineTag(line));
+                            } else if (hasOpenTag && ParserDefinition.isCloseTag(line))
                             {
-                                parseCloseTag<T>(ref Model, Definition.getMatchesCloseTag(line));
+                                parseCloseTag<T>(ref Model, ParserDefinition.getMatchesCloseTag(line));
                                 hasCloseTag = true;
                             } else
                             {
@@ -639,25 +639,25 @@ namespace IBlockScripts
                     abstract public void parseCloseTag<T>(ref T model, System.Text.RegularExpressions.MatchCollection matches) where T : Model.Base;
                     abstract public void parseCommentTag<T>(ref T model, System.Text.RegularExpressions.MatchCollection matches) where T : Model.Base;
 
-                    public bool TryGetGroupValue(System.Text.RegularExpressions.MatchCollection Matches, string name, ref List<string> Values)
+                    public bool TryGetGroupValues(System.Text.RegularExpressions.MatchCollection Matches, string groupName, ref List<string> GroupValues)
                     {
-                        bool success = false;
+                        bool hasFoundGroupValue = false;
 
                         for(int i = 0; i < Matches.Count; i++)
                         {
-                            if (Matches[i].Groups[name].Success)
+                            if (Matches[i].Groups[groupName].Success)
                             {
-                                Values.Add(Matches[i].Groups[name].Value);
-                                success = true;
+                                GroupValues.Add(Matches[i].Groups[groupName].Value);
+                                hasFoundGroupValue = true;
                             }
                         }
 
-                        return success;                        
+                        return hasFoundGroupValue;                        
                     }
             }
         }
 
-        abstract class Definition
+        abstract class ParserDefinition
         {
             public class Bitmap : Base
             {
