@@ -217,6 +217,56 @@ namespace IBlockScripts
         
         abstract class Model
         {
+            public class Color : Base
+            {
+                public const char GREEN = '\uE001';
+                public const char BLUE = '\uE002';
+                public const char RED = '\uE003';
+                public const char YELLOW = '\uE004';
+                public const char WHITE = '\uE006';
+                public const char LIGHT_GRAY = '\uE00E';
+                public const char MEDIUM_GRAY = '\uE00D';
+                public const char DARK_GRAY = '\uE00F';
+
+                private Dictionary<char, char> map = new Dictionary<char, char>();
+                static private Color instance;
+
+                public Color()
+                {
+                    map.Add('g', GREEN);
+                    map.Add('G', GREEN);
+                    map.Add('b', BLUE);
+                    map.Add('B', BLUE);
+                    map.Add('r', RED);
+                    map.Add('R', RED);
+                    map.Add('y', YELLOW);
+                    map.Add('Y', YELLOW);
+                    map.Add('w', WHITE);
+                    map.Add('W', WHITE);
+                    map.Add('l', LIGHT_GRAY);
+                    map.Add('L', LIGHT_GRAY);
+                    map.Add('m', MEDIUM_GRAY);
+                    map.Add('M', MEDIUM_GRAY);
+                    map.Add('d', DARK_GRAY);
+                    map.Add('D', DARK_GRAY);
+                }
+
+                static private Color getInstance()
+                {
+                    if((Color.instance == null) || !(Color.instance is Color)){
+                        Color.instance = new Color();
+                    }
+
+                    return Color.instance;
+                }
+
+                static public char get(char key)
+                {
+                    Color color = Color.getInstance();
+                    return color.map.ContainsKey(key) ? color.map[key] : key;
+                }
+            }
+
             public class Polygon : Base
             {
                 private List<Model.Pixel> pixels = new List<Pixel>();
@@ -385,7 +435,7 @@ namespace IBlockScripts
                         char[] row = pattern.Substring(start, count).ToCharArray();
                         for(int x = 0; x < row.Length; x++)
                         {
-                            newBitmap.getPixels().Add(new Model.Pixel(new Point(x,y), row[x]));
+                            newBitmap.getPixels().Add(new Model.Pixel(new Point(x,y), Model.Color.get(row[x])));
                         }
                     }    
 
