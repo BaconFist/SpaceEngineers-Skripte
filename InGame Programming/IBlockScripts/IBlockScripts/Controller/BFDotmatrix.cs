@@ -655,6 +655,12 @@ namespace IBlockScripts
 
                 abstract public class Base
                 {
+                    public T parse<T>(string line, ParserDefinition.Base ParserDefinition, Factory.Base Factory) where T : Model.Base
+                    {
+                        string[] lines = ParserDefinition.getLines(line);
+                        return parse<T>(lines, ParserDefinition, Factory);                   
+                    }
+                
                     public T parse<T>(string[] lines, ParserDefinition.Base ParserDefinition, Factory.Base Factory) where T : Model.Base
                     {
                         T Model = Factory.getModel<T>();
@@ -738,6 +744,12 @@ namespace IBlockScripts
                 protected System.Text.RegularExpressions.Regex LineTag = new System.Text.RegularExpressions.Regex(@".*");
                 protected System.Text.RegularExpressions.Regex CloseTag = new System.Text.RegularExpressions.Regex(@".*");
                 protected System.Text.RegularExpressions.Regex CommentTag = new System.Text.RegularExpressions.Regex(@"//.*");
+                protected char[] splitChars = new Char[] { ';', '\n', '\r' };
+
+                public string[] getLines(string line)
+                {
+                    return line.Split(splitChars, StringSplitOptions.RemoveEmptyEntries);
+                }
 
                 public bool isOpenTag(string line)
                 {
