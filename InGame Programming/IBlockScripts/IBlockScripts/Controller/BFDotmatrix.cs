@@ -34,37 +34,7 @@ namespace IBlockScripts
        */
         void Main(string args)
         {
-            Model.Canvas Canvas = new Model.Canvas(new Model.Dimension(30,30), Model.Color.GREEN, Model.Color.LIGHT_GRAY);
-            Drawing.Vector2D Vector = new Drawing.Vector2D();
-
-            Model.Polygon Polygon = new Model.Polygon();
-            Vector.moveTo(new Point(0,20), Canvas);
-            Vector.lineTo(new Point(0,10), Canvas);
-            Vector.lineTo(new Point(10,10), Canvas);
-            Vector.lineTo(new Point(10,20), Canvas);
-            Vector.lineTo(new Point(0,10), Canvas);
-            Vector.lineTo(new Point(5,0), Canvas);
-            Vector.lineTo(new Point(10,10), Canvas);
-            Vector.lineTo(new Point(0,20), Canvas);
-            Vector.lineTo(new Point(10,20), Canvas);
-
-            char[][] ws = Canvas.getWorkspace();
-
-            List<IMyTerminalBlock> lcd = new List<IMyTerminalBlock>();
-            GridTerminalSystem.GetBlocksOfType<IMyTextPanel>(lcd, (x => x.CustomName.Contains(args)));
-            if(lcd.Count > 0)
-            {
-                StringBuilder sb = new StringBuilder();
-                for(int y = 0; y < ws.Length; y++)
-                {
-                    sb.AppendLine(new String(ws[y]));
-                }
-                for(int i = 0; i < lcd.Count; i++)
-                {
-                    (lcd[i] as IMyTextPanel).WritePublicText(sb.ToString());
-                }
-            }
-
+          
         }
 
         abstract class Drawing
