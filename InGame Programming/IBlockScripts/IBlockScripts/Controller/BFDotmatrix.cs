@@ -8,6 +8,7 @@ using Sandbox.ModAPI.Ingame;
 using Sandbox.ModAPI.Interfaces;
 using VRage;
 using VRageMath;
+using VRage.Game.ModAPI;
 
 namespace IBlockScripts
 {
@@ -34,7 +35,50 @@ namespace IBlockScripts
        */
         void Main(string args)
         {
-          
+
+        }
+        
+        abstract class SpaceEngineersBridge
+        {
+            public class BlockFinder
+            {
+                public List<T> findAllByTag<T>(string tag, IMyGridTerminalSystem GridTerminalSystem, IMyCubeGrid CubeGrid = null) where T : IMyTerminalBlock
+                {
+                    if (tag.StartsWith("T:"))
+                    {
+                        tag = tag.Remove(0, 2);
+                    } else
+                    {
+                        CubeGrid = null;
+                    }
+
+                    List<IMyTerminalBlock> MatchingBlocks = new List<IMyTerminalBlock>();
+                    GridTerminalSystem.GetBlocksOfType<T>(MatchingBlocks, (x => x.CustomName.Contains(tag) && (CubeGrid == null || x.CubeGrid.Equals(CubeGrid)) ));
+
+                    return MatchingBlocks.ConvertAll<T>(x => (T)x);
+                }
+            }
+
+            public class TextPanelRW
+            {
+                private IMyTextPanel TextPanel;
+                
+                public TextPanelRW(IMyTextPanel TextPanel, IMyGridTerminalSystem GridTerminalSystem)
+                {
+                    this.TextPanel = TextPanel;
+                }
+
+                public void setImage(Model.Canvas Canvas)
+                {
+                    TextPanel.WritePublicText(Canvas.getWorkspace().ToString());
+                }
+
+                public string getConfig()
+                {
+                    return TextPanel.GetPrivateText();
+                }
+                
+            }
         }
 
         abstract class Drawing
@@ -181,9 +225,15 @@ namespace IBlockScripts
                     createWorkspace(Dimension.width, Dimension.height, defaultBackgroundColor);
                 }
 
-                public char[][] getWorkspace()
+                public StringBuilder getWorkspace()
                 {
-                    return workspace;
+                    StringBuilder sb = new StringBuilder();
+                    for(int i = 0; i < workspace.Length; i++)
+                    {
+                        sb.AppendLine(new String(workspace[i]));
+                    }
+
+                    return sb;
                 }
 
                 private void createWorkspace(int width, int height, char color)
