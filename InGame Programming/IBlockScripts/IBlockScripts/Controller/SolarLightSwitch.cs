@@ -43,6 +43,8 @@ namespace IBlockScripts
 
        */
 
+        const bool DEBUG = true;
+
         string key = "!SOL_SW!";
         double AveragePowerMin = 15000.0;
 
@@ -68,13 +70,19 @@ namespace IBlockScripts
                 }
             }
 
+            debug("Param: key = " + key + "; AveragePowerMin = " + AveragePowerMin.ToString());
 
             List<IMyTerminalBlock> SolarPanels = new List<IMyTerminalBlock>();
             List<IMyTerminalBlock> Lights = new List<IMyTerminalBlock>();
             GridTerminalSystem.GetBlocksOfType<IMySolarPanel>(SolarPanels, (x => x.CubeGrid.Equals(Me.CubeGrid)));
             GridTerminalSystem.GetBlocksOfType<IMyLightingBlock>(Lights, (x => x.CustomName.Contains(key) && x.CubeGrid.Equals(Me.CubeGrid)));
 
+            debug("SolarPanels x " + SolarPanels.Count.ToString());
+            debug("Lights x " + Lights.Count.ToString());
+
             double AveragePower = getAverageSolarPanelPowerWatt(SolarPanels);
+            debug("AveragePower = " + AveragePower.ToString());
+
 
             string Action = "OnOff_Off";
             if(AveragePower < AveragePowerMin)
@@ -95,14 +103,16 @@ namespace IBlockScripts
             for (int i=0;i<SolarPanelList.Count;i++)
             {
                 double cur = getSolarpanelPowerWatt(SolarPanelList[i] as IMySolarPanel);
+                debug("Power ("+SolarPanelList[i].CustomName+") = " + cur.ToString());
                 PowerSum += cur;
             }
-
+            debug("PowerSum = " + PowerSum.ToString());
             return PowerSum / SolarPanelList.Count;
         }
 
         double getSolarpanelPowerWatt(IMySolarPanel SolarPanel)
         {
+            debug("Detail (" + SolarPanel.CustomName + ") > " + SolarPanel.DetailedInfo);
             DetailedInfo DI = new DetailedInfo(SolarPanel);
 
             return parsePower(DI.getValue(1).getValue());
@@ -112,6 +122,7 @@ namespace IBlockScripts
         {
             double result = 0;
             value = value.ToLower();
+            debug("Parsepower RAW = " + value);
             int f = 1;
             if (value.Contains("g"))
             {
@@ -183,6 +194,14 @@ namespace IBlockScripts
             public string getValue()
             {
                 return value;
+            }
+        }
+
+        void debug(string msg)
+        {
+            if (DEBUG)
+            {
+                Echo(msg);
             }
         }
 
