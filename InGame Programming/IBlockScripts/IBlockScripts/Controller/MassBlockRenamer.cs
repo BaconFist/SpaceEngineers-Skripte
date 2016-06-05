@@ -154,13 +154,10 @@ namespace IBlockScripts
 
             private System.Text.RegularExpressions.Regex getRegexFromGlob(string glob)
             {
-                string pattern = glob
-                    .Replace(@"*", @".*")
-                    .Replace(@"?", @".")
-                 //   .Replace(@"\[!([^\]]+)\]", @"[^$1]")
-                    .Replace(@"\[([^\]]+)\]", @"[$1]");
-
-                
+                pattern = System.Text.RegularExpressions.Regex.Escape(glob)
+                    .Replace(@"\*", @".*")
+                    .Replace(@"\?", @".")
+                    .Replace(@"\\\[([^\]]+)\]", @"[$1]");                
 
                 return new System.Text.RegularExpressions.Regex(pattern);
             }
