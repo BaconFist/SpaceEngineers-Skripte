@@ -30,40 +30,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="IngameScript">
-      <HintPath>..\..\..\..\..\Apps\Steam\steamapps\common\SpaceEngineers\Bin64\IngameScript.dll</HintPath>
-    </Reference>
-    <Reference Include="Sandbox.Common">
-      <HintPath>..\..\..\..\..\Apps\Steam\steamapps\common\SpaceEngineers\Bin64\Sandbox.Common.dll</HintPath>
-    </Reference>
-    <Reference Include="SteamSDK">
-      <HintPath>..\..\..\..\..\Apps\Steam\steamapps\common\SpaceEngineers\Bin64\SteamSDK.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
-    <Reference Include="VRage">
-      <HintPath>..\..\..\..\..\Apps\Steam\steamapps\common\SpaceEngineers\Bin64\VRage.dll</HintPath>
-    </Reference>
-    <Reference Include="VRage.Game">
-      <HintPath>..\..\..\..\..\Apps\Steam\steamapps\common\SpaceEngineers\Bin64\VRage.Game.dll</HintPath>
-    </Reference>
-    <Reference Include="VRage.Library">
-      <HintPath>..\..\..\..\..\Apps\Steam\steamapps\common\SpaceEngineers\Bin64\VRage.Library.dll</HintPath>
-    </Reference>
-    <Reference Include="VRage.Math">
-      <HintPath>..\..\..\..\..\Apps\Steam\steamapps\common\SpaceEngineers\Bin64\VRage.Math.dll</HintPath>
-    </Reference>
-    <Reference Include="VRage.Native">
-      <HintPath>..\..\..\..\..\Apps\Steam\steamapps\common\SpaceEngineers\Bin64\VRage.Native.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="Controller\AreaDefenceDroneAI.cs" />
     <Compile Include="Controller\AutomatedAntennaSwitch.cs" />
     <Compile Include="Controller\BaconDotmatrixLCD.cs" />
@@ -86,6 +52,33 @@
     <Compile Include="Controller\StargateModDHDAdressChanger.cs" />
     <Compile Include="Templates\MyGridProgramTemplate.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="CommandLine">
+      <HintPath>..\..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\CommandLine.dll</HintPath>
+    </Reference>
+    <Reference Include="Sandbox.Common, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\Sandbox.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Sandbox.Game">
+      <HintPath>..\..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\Sandbox.Game.dll</HintPath>
+    </Reference>
+    <Reference Include="SpaceEngineers.Game">
+      <HintPath>..\..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\SpaceEngineers.Game.dll</HintPath>
+    </Reference>
+    <Reference Include="VRage.Game, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\VRage.Game.dll</HintPath>
+    </Reference>
+    <Reference Include="VRage.Library, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\VRage.Library.dll</HintPath>
+    </Reference>
+    <Reference Include="VRage.Math, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\VRage.Math.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
