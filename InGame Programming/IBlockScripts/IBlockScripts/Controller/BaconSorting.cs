@@ -273,6 +273,8 @@ namespace IBlockScripts
 
                     line = prefix + line;
 
+                    Echo(line.Trim());
+
                     List<IMyTerminalBlock> LCDs = new List<IMyTerminalBlock>();
                     GridTerminalSystem.GetBlocksOfType<IMyTextPanel>(LCDs, (x => x.CustomName.Contains(TAG_LOG_DEBUG_LCD) && x.CubeGrid.Equals(Me.CubeGrid)));
 

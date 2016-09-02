@@ -52,32 +52,47 @@ namespace IBlockScripts
                 Remove: "Interior;" => "Light 1", "Light 2", "Light 3", "Small Reactor 11"
          */
         const string MARKER_MATCH = "|";
+        const string MARKER_NUMBER = "#";
 
         public void Main(string args)
         {
             Argument Arg = getArgument(args);
-            Glob Filter = new Glob(Arg.glob);
-            Echo(Arg.glob + " => " + Filter.Rgx.ToString());
-            List<IMyTerminalBlock> Group = getBlockGroup(Arg);
-            List<IMyTerminalBlock> Blocks = findBlocksByGlob(Group, Filter);
-            replaceNamesInBlocklist(Blocks, Filter, Arg);
+            if (Arg != null)
+            {
+                Glob Filter = new Glob(Arg.glob);
+                Echo(Arg.glob + " => " + Filter.Rgx.ToString());
+                List<IMyTerminalBlock> Group = getBlockGroup(Arg);
+                List<IMyTerminalBlock> Blocks = findBlocksByGlob(Group, Filter);
+                replaceNamesInBlocklist(Blocks, Filter, Arg);
+            }
         } 
 
         public void replaceNamesInBlocklist(List<IMyTerminalBlock> Blocks, Glob Filter, Argument Arg)
         {
-            for(int i=0;i<Blocks.Count; i++)
+            Dictionary<string, int> BlockCounter = new Dictionary<string, int>();
+            for (int i=0;i<Blocks.Count; i++)
             {
-                replaceBlockname(Blocks[i], Filter, Arg);
+                string typeIdString = Blocks[i].BlockDefinition.TypeIdString;
+                if (!BlockCounter.ContainsKey(typeIdString))
+                {
+                    BlockCounter.Add(typeIdString, 0);
+                }
+                BlockCounter[typeIdString] = BlockCounter[typeIdString] + 1;
+                replaceBlockname(Blocks[i], Filter, Arg, BlockCounter[typeIdString]);
             }
         }
 
-        public void replaceBlockname(IMyTerminalBlock Block, Glob Filter, Argument Arg)
+        public void replaceBlockname(IMyTerminalBlock Block, Glob Filter, Argument Arg, int blockNumber)
         {
             StringBuilder slug = new StringBuilder(Block.CustomName);
             string[] matches = Filter.getMatches(Block.CustomName);
             for(int i = 0; i < matches.Length; i++)
             {
-                slug = slug.Replace(matches[i], Arg.replacement.Replace(MARKER_MATCH, matches[i]));
+				if(matches[i].Length > 0){
+					Echo(Block.CustomName + " => \"" + matches[i] + "\"");
+					slug = slug.Replace(matches[i], Arg.replacement.Replace(MARKER_MATCH, matches[i]));
+					slug = slug.Replace(MARKER_NUMBER, blockNumber.ToString());
+				}
             }
             Block.SetCustomName(slug.ToString());
         }
@@ -88,17 +103,19 @@ namespace IBlockScripts
             string[] argv = args.Split(';');
             if(argv.Length == 2)
             {
-                // no Group
                 Arg.glob = argv[0];
                 Arg.replacement = argv[1];
-            } else if(argv.Length > 2)
+            }
+            else if(argv.Length == 3)
             {
-                Arg.group = argv[0];
+				Arg.group = argv[0];
                 Arg.glob = argv[1];
                 Arg.replacement = argv[2];
+            }else
+            {
+                return null;
             }
-
-
+            
             return Arg;           
         }
 
@@ -157,7 +174,8 @@ namespace IBlockScripts
                 pattern = System.Text.RegularExpressions.Regex.Escape(glob)
                     .Replace(@"\*", @".*")
                     .Replace(@"\?", @".")
-                    .Replace(@"\\\[([^\]]+)\]", @"[$1]");                
+                    .Replace(@"\\\[([^\]]+)\]", @"[$1]")
+                    .Replace(@"\ ",@" ");                
 
                 return new System.Text.RegularExpressions.Regex(pattern);
             }

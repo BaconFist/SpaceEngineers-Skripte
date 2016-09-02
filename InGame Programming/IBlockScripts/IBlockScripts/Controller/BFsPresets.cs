@@ -123,6 +123,8 @@ namespace IBlockScripts
             if (isMaster)
             {
                 Groups[name].Masters.Add(Block);
+                Echo("Group: \"" + name + "\"");
+                Echo(" => Master: \"" + Block.CustomName + "\"");
             } else
             {
                 Groups[name].Slaves.Add(Block);
